@@ -1,0 +1,17 @@
+
+# 变量
+@host = http://localhost:8080
+
+GET {{host}}/test/hello
+
+###
+
+POST {{host}}/test/echo
+Content-Type:  application/json
+
+{
+    "name": "tom"
+}
+
+###
+
