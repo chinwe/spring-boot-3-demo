@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 @Builder
-public class DelayDto {
+public class DelayVo {
 
     private Integer second;
 }
