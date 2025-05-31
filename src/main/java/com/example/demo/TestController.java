@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.dto.DelayDto;
+
 @RestController
 @RequestMapping("/test")
 public class TestController {
@@ -18,5 +20,11 @@ public class TestController {
     @PostMapping("/echo")
     public String echo(@RequestBody String message) {
         return message;
+    }
+
+    @PostMapping("/delay")
+    public String delay(@RequestBody DelayDto delayDto) throws InterruptedException {
+        Thread.sleep(delayDto.getSecond() * 1000);
+        return String.format("Delayed for %d seconds", delayDto.getSecond());
     }
 }
