@@ -6,7 +6,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.demo.dto.DelayVo;
+import com.example.demo.vo.DelayVo;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/test")
@@ -23,7 +25,7 @@ public class TestController {
     }
 
     @PostMapping("/delay")
-    public String delay(@RequestBody DelayVo delayVo) throws InterruptedException {
+    public String delay(@Valid @RequestBody DelayVo delayVo) throws InterruptedException {
         Thread.sleep(delayVo.getSecond() * 1000);
         return String.format("Delayed for %d seconds", delayVo.getSecond());
     }

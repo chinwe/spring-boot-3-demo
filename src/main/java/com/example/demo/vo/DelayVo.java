@@ -1,14 +1,12 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-
-package com.example.demo.dto;
+package com.example.demo.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Max;
 
 /**
  *
@@ -20,5 +18,8 @@ import lombok.NoArgsConstructor;
 @Builder
 public class DelayVo {
 
+    @NotNull
+    @Min(value = 1)
+    @Max(value = 60)
     private Integer second;
 }
