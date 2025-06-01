@@ -23,3 +23,9 @@ Content-Type:  application/json
 {
     "second": 0
 }
+
+###
+
+POST {{host}}/test/jooq
+Content-Type:  application/json
+
