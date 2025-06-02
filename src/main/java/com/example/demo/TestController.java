@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.entity.User;
+import com.example.demo.mapper.UserMapper;
 import com.example.demo.vo.DelayVo;
 
 import jakarta.annotation.Resource;
@@ -20,6 +22,9 @@ public class TestController {
     @Resource
     private DSLContext dsl;
     
+    @Resource
+    private UserMapper userMapper;
+
     @GetMapping("/hello")
     public String sayHello() {
         return "Hello from TestController!";
@@ -41,5 +46,10 @@ public class TestController {
         return dsl.select(DSL.field("CURRENT_TIMESTAMP", String.class))
             .from(DSL.table("DUAL"))
             .fetchOne(0, String.class);
+    }
+
+    @GetMapping("/user")
+    public String getUser() {
+        return userMapper.toUserDto(new User(1L, "John", "john@example.com")).toString();
     }
 }

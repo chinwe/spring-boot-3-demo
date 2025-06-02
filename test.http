@@ -29,3 +29,10 @@ Content-Type:  application/json
 POST {{host}}/test/jooq
 Content-Type:  application/json
 
+###
+
+GET {{host}}/test/user
+Content-Type:  application/json
+
+ ###
+ 
