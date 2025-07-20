@@ -34,5 +34,94 @@ Content-Type:  application/json
 GET {{host}}/test/user
 Content-Type:  application/json
 
- ###
- 
+###
+
+# Async Servlet Examples
+
+# CompletableFuture Example - Basic
+GET {{host}}/async/completable-future/basic-task
+
+###
+
+# CompletableFuture Example - With custom delay
+GET {{host}}/async/completable-future/custom-task?delaySeconds=3&shouldFail=false
+
+###
+
+# CompletableFuture Example - Simulate failure
+GET {{host}}/async/completable-future/failing-task?delaySeconds=2&shouldFail=true
+
+###
+
+# DeferredResult Example - Basic
+POST {{host}}/async/deferred-result
+Content-Type: application/json
+
+{
+    "taskName": "deferred-basic-task",
+    "delaySeconds": 4,
+    "shouldFail": false
+}
+
+###
+
+# DeferredResult Example - With failure simulation
+POST {{host}}/async/deferred-result
+Content-Type: application/json
+
+{
+    "taskName": "deferred-failing-task",
+    "delaySeconds": 2,
+    "shouldFail": true
+}
+
+###
+
+# DeferredResult Example - Validation error (should fail)
+POST {{host}}/async/deferred-result
+Content-Type: application/json
+
+{
+    "taskName": "",
+    "delaySeconds": 35,
+    "shouldFail": false
+}
+
+###
+
+# Callable Example - Basic
+GET {{host}}/async/callable/3
+
+###
+
+# Callable Example - Quick response
+GET {{host}}/async/callable/1
+
+###
+
+# Concurrent Requests Example - Default (3 tasks, 5s each)
+GET {{host}}/async/concurrent-test
+
+###
+
+# Concurrent Requests Example - Custom parameters
+GET {{host}}/async/concurrent-test?taskCount=5&delaySeconds=2
+
+###
+
+# Concurrent Requests Example - Single task
+GET {{host}}/async/concurrent-test?taskCount=1&delaySeconds=3
+
+###
+
+# Performance Monitoring
+
+# Get async metrics
+GET {{host}}/async/metrics
+
+###
+
+# Reset async metrics
+POST {{host}}/async/metrics/reset
+
+###
