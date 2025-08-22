@@ -18,7 +18,7 @@ public class CustomRetryListener implements RetryListener {
     @Override
     public <T, E extends Throwable> boolean open(RetryContext context, RetryCallback<T, E> callback) {
         String operationName = getOperationName(callback);
-        log.info("🚀 开始重试操作: {}", operationName);
+        log.info("🚀 Starting retry operation: {}", operationName);
         
         // 在上下文中记录开始时间
         context.setAttribute("start_time", System.currentTimeMillis());
@@ -33,7 +33,7 @@ public class CustomRetryListener implements RetryListener {
         long startTime = (Long) context.getAttribute("start_time");
         long duration = System.currentTimeMillis() - startTime;
         
-        log.info("✅ 重试操作成功: {} | 重试次数: {} | 总耗时: {}ms", 
+        log.info("✅ Retry operation succeeded: {} | Retry count: {} | Total duration: {}ms", 
                 operationName, context.getRetryCount(), duration);
     }
 
@@ -41,7 +41,7 @@ public class CustomRetryListener implements RetryListener {
     public <T, E extends Throwable> void onError(RetryContext context, RetryCallback<T, E> callback, Throwable throwable) {
         String operationName = (String) context.getAttribute("operation_name");
         
-        log.warn("❌ 重试操作失败: {} | 第{}次尝试 | 异常: {} | 消息: {}", 
+        log.warn("❌ Retry operation failed: {} | Attempt {} | Exception: {} | Message: {}", 
                 operationName, context.getRetryCount() + 1, 
                 throwable.getClass().getSimpleName(), throwable.getMessage());
     }
@@ -53,10 +53,10 @@ public class CustomRetryListener implements RetryListener {
         long totalDuration = System.currentTimeMillis() - startTime;
         
         if (throwable != null) {
-            log.error("🔄 重试操作最终失败: {} | 总重试次数: {} | 总耗时: {}ms | 最终异常: {}", 
+            log.error("🔄 Retry operation finally failed: {} | Total retries: {} | Total duration: {}ms | Final exception: {}", 
                     operationName, context.getRetryCount(), totalDuration, throwable.getMessage());
         } else {
-            log.info("🎯 重试操作结束: {} | 总重试次数: {} | 总耗时: {}ms", 
+            log.info("🎯 Retry operation completed: {} | Total retries: {} | Total duration: {}ms", 
                     operationName, context.getRetryCount(), totalDuration);
         }
         

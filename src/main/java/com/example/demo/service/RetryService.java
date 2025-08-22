@@ -42,12 +42,13 @@ public class RetryService {
      */
     @Retryable(retryFor = TemporaryException.class, 
                maxAttempts = 3, 
-               backoff = @Backoff(delay = 1000))
+               backoff = @Backoff(delay = 1000),
+               recover="recoverFromBasicRetry")
     public String basicRetryExample(boolean shouldSucceed) {
         int attempt = attemptCounter.incrementAndGet();
         log.info("Basic retry example - attempt {}", attempt);
         
-        if (!shouldSucceed && attempt < 3) {
+        if (!shouldSucceed) {
             throw new TemporaryException("Simulated temporary exception - attempt " + attempt);
         }
         
