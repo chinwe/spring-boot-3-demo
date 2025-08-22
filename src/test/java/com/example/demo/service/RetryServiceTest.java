@@ -37,7 +37,7 @@ class RetryServiceTest {
         // 测试成功场景
         String result = retryService.basicRetryExample(true);
         assertNotNull(result);
-        assertTrue(result.contains("成功"));
+        assertTrue(result.contains("succeeded"));
     }
 
     @Test
@@ -45,7 +45,8 @@ class RetryServiceTest {
         // 测试失败后恢复场景
         String result = retryService.basicRetryExample(false);
         assertNotNull(result);
-        assertTrue(result.contains("恢复"));
+        System.out.println(result);
+        assertTrue(result.contains("Recovery"));
     }
 
     @Test
@@ -53,7 +54,7 @@ class RetryServiceTest {
         // 测试本地服务调用成功
         String result = retryService.localServiceCall(true);
         assertNotNull(result);
-        assertTrue(result.contains("本地服务调用成功"));
+        assertTrue(result.contains("Local service call succeeded"));
     }
 
     @Test
@@ -61,7 +62,7 @@ class RetryServiceTest {
         // 测试本地服务调用失败后恢复
         String result = retryService.localServiceCall(false);
         assertNotNull(result);
-        assertTrue(result.contains("恢复"));
+        assertTrue(result.contains("Recovery"));
     }
 
     @Test
@@ -69,7 +70,7 @@ class RetryServiceTest {
         // 测试远程服务调用成功
         String result = retryService.remoteServiceCall(true);
         assertNotNull(result);
-        assertTrue(result.contains("远程服务调用成功"));
+        assertTrue(result.contains("Remote service call succeeded"));
     }
 
     @Test
@@ -77,7 +78,7 @@ class RetryServiceTest {
         // 测试远程服务调用失败后恢复
         String result = retryService.remoteServiceCall(false);
         assertNotNull(result);
-        assertTrue(result.contains("恢复"));
+        assertTrue(result.contains("Recovery"));
     }
 
     @Test
@@ -85,7 +86,7 @@ class RetryServiceTest {
         // 测试临时异常的条件重试
         String result = retryService.conditionalRetryExample("temporary");
         assertNotNull(result);
-        assertTrue(result.contains("成功") || result.contains("恢复"));
+        assertTrue(result.contains("succeeded") || result.contains("Recovery"));
     }
 
     @Test
@@ -93,7 +94,7 @@ class RetryServiceTest {
         // 测试网络异常的条件重试
         String result = retryService.conditionalRetryExample("network");
         assertNotNull(result);
-        assertTrue(result.contains("成功") || result.contains("恢复"));
+        assertTrue(result.contains("succeeded") || result.contains("Recovery"));
     }
 
     @Test
@@ -109,7 +110,7 @@ class RetryServiceTest {
         // 测试编程式重试成功
         String result = retryService.imperativeRetryExample(true);
         assertNotNull(result);
-        assertTrue(result.contains("编程式重试成功"));
+        assertTrue(result.contains("Imperative retry succeeded"));
     }
 
     @Test
@@ -117,7 +118,7 @@ class RetryServiceTest {
         // 测试编程式重试失败后恢复
         String result = retryService.imperativeRetryExample(false);
         assertNotNull(result);
-        assertTrue(result.contains("恢复"));
+        assertTrue(result.contains("Recovery"));
     }
 
     @Test
@@ -125,7 +126,7 @@ class RetryServiceTest {
         // 测试SpEL重试 - 普通优先级
         String result = retryService.spelRetryExample(true, "normal");
         assertNotNull(result);
-        assertTrue(result.contains("SpEL重试成功"));
+        assertTrue(result.contains("SpEL retry succeeded"));
         assertTrue(result.contains("normal"));
     }
 
@@ -134,7 +135,7 @@ class RetryServiceTest {
         // 测试SpEL重试 - 关键优先级
         String result = retryService.spelRetryExample(true, "critical");
         assertNotNull(result);
-        assertTrue(result.contains("SpEL重试成功"));
+        assertTrue(result.contains("SpEL retry succeeded"));
         assertTrue(result.contains("critical"));
     }
 
@@ -143,7 +144,7 @@ class RetryServiceTest {
         // 测试SpEL重试失败后恢复 - 普通优先级
         String result = retryService.spelRetryExample(false, "normal");
         assertNotNull(result);
-        assertTrue(result.contains("恢复"));
+        assertTrue(result.contains("Recovery"));
         assertTrue(result.contains("normal"));
     }
 
@@ -152,7 +153,7 @@ class RetryServiceTest {
         // 测试SpEL重试失败后恢复 - 关键优先级
         String result = retryService.spelRetryExample(false, "critical");
         assertNotNull(result);
-        assertTrue(result.contains("恢复"));
+        assertTrue(result.contains("Recovery"));
         assertTrue(result.contains("critical"));
     }
 
@@ -175,8 +176,8 @@ class RetryServiceTest {
         assertNotNull(result2);
         assertNotNull(result3);
         
-        assertTrue(result1.contains("基本重试成功"));
-        assertTrue(result2.contains("本地服务调用成功"));
-        assertTrue(result3.contains("编程式重试成功"));
+        assertTrue(result1.contains("Basic retry succeeded"));
+        assertTrue(result2.contains("Local service call succeeded"));
+        assertTrue(result3.contains("Imperative retry succeeded"));
     }
 }

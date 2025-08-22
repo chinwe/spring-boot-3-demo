@@ -45,14 +45,14 @@ public class RetryService {
                backoff = @Backoff(delay = 1000))
     public String basicRetryExample(boolean shouldSucceed) {
         int attempt = attemptCounter.incrementAndGet();
-        log.info("基本重试示例 - 第{}次尝试", attempt);
+        log.info("Basic retry example - attempt {}", attempt);
         
         if (!shouldSucceed && attempt < 3) {
-            throw new TemporaryException("模拟临时异常 - 第" + attempt + "次尝试");
+            throw new TemporaryException("Simulated temporary exception - attempt " + attempt);
         }
         
         attemptCounter.set(0); // 重置计数器
-        return "基本重试成功！总共尝试了" + attempt + "次";
+        return "Basic retry succeeded! Total attempts: " + attempt;
     }
 
     /**
@@ -60,9 +60,9 @@ public class RetryService {
      */
     @Recover
     public String recoverFromBasicRetry(TemporaryException ex) {
-        log.error("基本重试最终失败，执行恢复逻辑: {}", ex.getMessage());
+        log.error("Basic retry finally failed, executing recovery logic: {}", ex.getMessage());
         attemptCounter.set(0); // 重置计数器
-        return "基本重试失败后的恢复结果";
+        return "Recovery result after basic retry failure";
     }
 
     /**
@@ -71,14 +71,14 @@ public class RetryService {
     @LocalRetryable(retryFor = TemporaryException.class, recover = "recoverFromLocalRetry")
     public String localServiceCall(boolean shouldSucceed) {
         int attempt = localCounter.incrementAndGet();
-        log.info("本地服务调用 - 第{}次尝试", attempt);
+        log.info("Local service call - attempt {}", attempt);
         
         if (!shouldSucceed && attempt < 3) {
-            throw new TemporaryException("本地服务临时不可用 - 第" + attempt + "次尝试");
+            throw new TemporaryException("Local service temporarily unavailable - attempt " + attempt);
         }
         
         localCounter.set(0); // 重置计数器
-        return "本地服务调用成功！总共尝试了" + attempt + "次";
+        return "Local service call succeeded! Total attempts: " + attempt;
     }
 
     /**
@@ -86,9 +86,9 @@ public class RetryService {
      */
     @Recover
     public String recoverFromLocalRetry(TemporaryException ex, boolean shouldSucceed) {
-        log.error("本地服务调用最终失败，执行恢复逻辑: {}", ex.getMessage());
+        log.error("Local service call finally failed, executing recovery logic: {}", ex.getMessage());
         localCounter.set(0); // 重置计数器
-        return "本地服务调用失败后的恢复结果";
+        return "Recovery result after local service call failure";
     }
 
     /**
@@ -97,14 +97,14 @@ public class RetryService {
     @RemoteRetryable(retryFor = NetworkException.class, recover = "recoverFromRemoteRetry")
     public String remoteServiceCall(boolean shouldSucceed) {
         int attempt = remoteCounter.incrementAndGet();
-        log.info("远程服务调用 - 第{}次尝试", attempt);
+        log.info("Remote service call - attempt {}", attempt);
         
         if (!shouldSucceed && attempt < 4) {
-            throw new NetworkException("网络连接超时 - 第" + attempt + "次尝试");
+            throw new NetworkException("Network connection timeout - attempt " + attempt);
         }
         
         remoteCounter.set(0); // 重置计数器
-        return "远程服务调用成功！总共尝试了" + attempt + "次";
+        return "Remote service call succeeded! Total attempts: " + attempt;
     }
 
     /**
@@ -112,9 +112,9 @@ public class RetryService {
      */
     @Recover
     public String recoverFromRemoteRetry(NetworkException ex, boolean shouldSucceed) {
-        log.error("远程服务调用最终失败，执行恢复逻辑: {}", ex.getMessage());
+        log.error("Remote service call finally failed, executing recovery logic: {}", ex.getMessage());
         remoteCounter.set(0); // 重置计数器
-        return "远程服务调用失败后的恢复结果";
+        return "Recovery result after remote service call failure";
     }
 
     /**
@@ -126,27 +126,27 @@ public class RetryService {
                backoff = @Backoff(delay = 500, maxDelay = 5000, multiplier = 2.0))
     public String conditionalRetryExample(String exceptionType) {
         int attempt = networkCounter.incrementAndGet();
-        log.info("条件重试示例 - 第{}次尝试，异常类型: {}", attempt, exceptionType);
+        log.info("Conditional retry example - attempt {}, exception type: {}", attempt, exceptionType);
         
         switch (exceptionType) {
             case "temporary":
                 if (attempt < 3) {
-                    throw new TemporaryException("临时异常 - 第" + attempt + "次尝试");
+                    throw new TemporaryException("Temporary exception - attempt " + attempt);
                 }
                 break;
             case "network":
                 if (attempt < 3) {
-                    throw new NetworkException("网络异常 - 第" + attempt + "次尝试");
+                    throw new NetworkException("Network exception - attempt " + attempt);
                 }
                 break;
             case "business":
-                throw new BusinessException("业务异常 - 不应该重试");
+                throw new BusinessException("Business exception - should not retry");
             default:
                 break;
         }
         
         networkCounter.set(0); // 重置计数器
-        return "条件重试成功！总共尝试了" + attempt + "次";
+        return "Conditional retry succeeded! Total attempts: " + attempt;
     }
 
     /**
@@ -154,9 +154,9 @@ public class RetryService {
      */
     @Recover
     public String recoverFromConditionalRetry(Exception ex, String exceptionType) {
-        log.error("条件重试最终失败，异常类型: {}，执行恢复逻辑: {}", exceptionType, ex.getMessage());
+        log.error("Conditional retry finally failed, exception type: {}, executing recovery logic: {}", exceptionType, ex.getMessage());
         networkCounter.set(0); // 重置计数器
-        return "条件重试失败后的恢复结果，异常类型: " + exceptionType;
+        return "Recovery result after conditional retry failure, exception type: " + exceptionType;
     }
 
     /**
@@ -167,18 +167,18 @@ public class RetryService {
             // RetryCallback - 执行的业务逻辑
             (RetryCallback<String, Exception>) context -> {
                 int attempt = (int) context.getRetryCount() + 1;
-                log.info("编程式重试示例 - 第{}次尝试", attempt);
+                log.info("Imperative retry example - attempt {}", attempt);
                 
                 if (!shouldSucceed && attempt < 3) {
-                    throw new TemporaryException("编程式重试临时异常 - 第" + attempt + "次尝试");
+                    throw new TemporaryException("Imperative retry temporary exception - attempt " + attempt);
                 }
                 
-                return "编程式重试成功！总共尝试了" + attempt + "次";
+                return "Imperative retry succeeded! Total attempts: " + attempt;
             },
             // RecoveryCallback - 重试失败后的恢复逻辑
             (RecoveryCallback<String>) context -> {
-                log.error("编程式重试最终失败，执行恢复逻辑");
-                return "编程式重试失败后的恢复结果";
+                log.error("Imperative retry finally failed, executing recovery logic");
+                return "Recovery result after imperative retry failure";
             }
         );
     }
@@ -195,14 +195,14 @@ public class RetryService {
     public String spelRetryExample(boolean shouldSucceed, String priority) {
         int maxAttempts = "critical".equals(priority) ? 5 : 2;
         int attempt = attemptCounter.incrementAndGet();
-        log.info("SpEL重试示例 - 第{}次尝试，优先级: {}，最大重试次数: {}", attempt, priority, maxAttempts);
+        log.info("SpEL retry example - attempt {}, priority: {}, max attempts: {}", attempt, priority, maxAttempts);
         
         if (!shouldSucceed && attempt < maxAttempts) {
-            throw new TemporaryException("SpEL重试异常 - 第" + attempt + "次尝试，优先级: " + priority);
+            throw new TemporaryException("SpEL retry exception - attempt " + attempt + ", priority: " + priority);
         }
         
         attemptCounter.set(0); // 重置计数器
-        return "SpEL重试成功！优先级: " + priority + "，总共尝试了" + attempt + "次";
+        return "SpEL retry succeeded! Priority: " + priority + ", total attempts: " + attempt;
     }
 
     /**
@@ -210,9 +210,9 @@ public class RetryService {
      */
     @Recover
     public String recoverFromSpelRetry(TemporaryException ex, boolean shouldSucceed, String priority) {
-        log.error("SpEL重试最终失败，优先级: {}，执行恢复逻辑: {}", priority, ex.getMessage());
+        log.error("SpEL retry finally failed, priority: {}, executing recovery logic: {}", priority, ex.getMessage());
         attemptCounter.set(0); // 重置计数器
-        return "SpEL重试失败后的恢复结果，优先级: " + priority;
+        return "Recovery result after SpEL retry failure, priority: " + priority;
     }
 
     /**
@@ -223,6 +223,6 @@ public class RetryService {
         localCounter.set(0);
         remoteCounter.set(0);
         networkCounter.set(0);
-        log.info("所有计数器已重置");
+        log.info("All counters have been reset");
     }
 }
