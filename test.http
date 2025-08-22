@@ -1,119 +1,242 @@
-### Spring Retry Controller 测试脚本
-### 基础配置：假设应用运行在 localhost:8080
+
+# 变量
+@host = http://localhost:8080
+
+GET {{host}}/test/hello
+
+###
+
+POST {{host}}/test/echo
+Content-Type:  application/json
+
+{
+    "name": "tom"
+}
+
+###
+
+###
+
+POST {{host}}/test/delay
+Content-Type:  application/json
+
+{
+    "second": 0
+}
+
+###
+
+POST {{host}}/test/jooq
+Content-Type:  application/json
+
+###
+
+GET {{host}}/test/user
+Content-Type:  application/json
+
+###
+
+# Async Servlet Examples
+
+# CompletableFuture Example - Basic
+GET {{host}}/async/completable-future/basic-task
+
+###
+
+# CompletableFuture Example - With custom delay
+GET {{host}}/async/completable-future/custom-task?delaySeconds=3&shouldFail=false
+
+###
+
+# CompletableFuture Example - Simulate failure
+GET {{host}}/async/completable-future/failing-task?delaySeconds=2&shouldFail=true
+
+###
+
+# DeferredResult Example - Basic
+POST {{host}}/async/deferred-result
+Content-Type: application/json
+
+{
+    "taskName": "deferred-basic-task",
+    "delaySeconds": 4,
+    "shouldFail": false
+}
+
+###
+
+# DeferredResult Example - With failure simulation
+POST {{host}}/async/deferred-result
+Content-Type: application/json
+
+{
+    "taskName": "deferred-failing-task",
+    "delaySeconds": 2,
+    "shouldFail": true
+}
+
+###
+
+# DeferredResult Example - Validation error (should fail)
+POST {{host}}/async/deferred-result
+Content-Type: application/json
+
+{
+    "taskName": "",
+    "delaySeconds": 35,
+    "shouldFail": false
+}
+
+###
+
+# Callable Example - Basic
+GET {{host}}/async/callable/3
+
+###
+
+# Callable Example - Quick response
+GET {{host}}/async/callable/1
+
+###
+
+# Concurrent Requests Example - Default (3 tasks, 5s each)
+GET {{host}}/async/concurrent-test
+
+###
+
+# Concurrent Requests Example - Custom parameters
+GET {{host}}/async/concurrent-test?taskCount=5&delaySeconds=2
+
+###
+
+# Concurrent Requests Example - Single task
+GET {{host}}/async/concurrent-test?taskCount=1&delaySeconds=3
+
+###
+
+# Performance Monitoring
+
+# Get async metrics
+GET {{host}}/async/metrics
+
+###
+
+# Reset async metrics
+POST {{host}}/async/metrics/reset
 
 ###
 ### 1. 基本重试示例 - 成功情况
-GET http://localhost:8080/retry/basic?shouldSucceed=true
+GET {{host}}/retry/basic?shouldSucceed=true
 Accept: application/json
 
 ###
 ### 2. 基本重试示例 - 触发重试（失败情况）
-GET http://localhost:8080/retry/basic?shouldSucceed=false
+GET {{host}}/retry/basic?shouldSucceed=false
 Accept: application/json
 
 ###
 ### 3. 基本重试示例 - 默认参数
-GET http://localhost:8080/retry/basic
+GET {{host}}/retry/basic
 Accept: application/json
 
 ###
 ### 4. 本地服务重试示例 - 成功情况
-GET http://localhost:8080/retry/local?shouldSucceed=true
+GET {{host}}/retry/local?shouldSucceed=true
 Accept: application/json
 
 ###
 ### 5. 本地服务重试示例 - 触发重试（失败情况）
-GET http://localhost:8080/retry/local?shouldSucceed=false
+GET {{host}}/retry/local?shouldSucceed=false
 Accept: application/json
 
 ###
 ### 6. 本地服务重试示例 - 默认参数
-GET http://localhost:8080/retry/local
+GET {{host}}/retry/local
 Accept: application/json
 
 ###
 ### 7. 远程服务重试示例 - 成功情况
-GET http://localhost:8080/retry/remote?shouldSucceed=true
+GET {{host}}/retry/remote?shouldSucceed=true
 Accept: application/json
 
 ###
 ### 8. 远程服务重试示例 - 触发重试（失败情况）
-GET http://localhost:8080/retry/remote?shouldSucceed=false
+GET {{host}}/retry/remote?shouldSucceed=false
 Accept: application/json
 
 ###
 ### 9. 远程服务重试示例 - 默认参数
-GET http://localhost:8080/retry/remote
+GET {{host}}/retry/remote
 Accept: application/json
 
 ###
 ### 10. 条件重试示例 - 临时异常（会重试）
-GET http://localhost:8080/retry/conditional?exceptionType=temporary
+GET {{host}}/retry/conditional?exceptionType=temporary
 Accept: application/json
 
 ###
 ### 11. 条件重试示例 - 网络异常（会重试）
-GET http://localhost:8080/retry/conditional?exceptionType=network
+GET {{host}}/retry/conditional?exceptionType=network
 Accept: application/json
 
 ###
 ### 12. 条件重试示例 - 业务异常（不会重试）
-GET http://localhost:8080/retry/conditional?exceptionType=business
+GET {{host}}/retry/conditional?exceptionType=business
 Accept: application/json
 
 ###
 ### 13. 条件重试示例 - 默认参数
-GET http://localhost:8080/retry/conditional
+GET {{host}}/retry/conditional
 Accept: application/json
 
 ###
 ### 14. 编程式重试示例 - 成功情况
-GET http://localhost:8080/retry/imperative?shouldSucceed=true
+GET {{host}}/retry/imperative?shouldSucceed=true
 Accept: application/json
 
 ###
 ### 15. 编程式重试示例 - 触发重试（失败情况）
-GET http://localhost:8080/retry/imperative?shouldSucceed=false
+GET {{host}}/retry/imperative?shouldSucceed=false
 Accept: application/json
 
 ###
 ### 16. 编程式重试示例 - 默认参数
-GET http://localhost:8080/retry/imperative
+GET {{host}}/retry/imperative
 Accept: application/json
 
 ###
 ### 17. SpEL表达式重试示例 - 成功情况，普通优先级
-GET http://localhost:8080/retry/spel?shouldSucceed=true&priority=normal
+GET {{host}}/retry/spel?shouldSucceed=true&priority=normal
 Accept: application/json
 
 ###
 ### 18. SpEL表达式重试示例 - 失败情况，普通优先级
-GET http://localhost:8080/retry/spel?shouldSucceed=false&priority=normal
+GET {{host}}/retry/spel?shouldSucceed=false&priority=normal
 Accept: application/json
 
 ###
 ### 19. SpEL表达式重试示例 - 成功情况，关键优先级
-GET http://localhost:8080/retry/spel?shouldSucceed=true&priority=critical
+GET {{host}}/retry/spel?shouldSucceed=true&priority=critical
 Accept: application/json
 
 ###
 ### 20. SpEL表达式重试示例 - 失败情况，关键优先级（更多重试次数）
-GET http://localhost:8080/retry/spel?shouldSucceed=false&priority=critical
+GET {{host}}/retry/spel?shouldSucceed=false&priority=critical
 Accept: application/json
 
 ###
 ### 21. SpEL表达式重试示例 - 默认参数
-GET http://localhost:8080/retry/spel
+GET {{host}}/retry/spel
 Accept: application/json
 
 ###
 ### 22. 重置计数器
-POST http://localhost:8080/retry/reset
+POST {{host}}/retry/reset
 Accept: application/json
 
 ###
 ### 23. 执行所有重试示例
-GET http://localhost:8080/retry/all-examples
+GET {{host}}/retry/all-examples
 Accept: application/json
 
 ###
@@ -123,23 +246,23 @@ Accept: application/json
 
 ###
 ### 24. 完整测试流程 - 先重置，再测试各种场景
-POST http://localhost:8080/retry/reset
+POST {{host}}/retry/reset
 
 ###
 ### 25. 测试基本重试功能
-GET http://localhost:8080/retry/basic?shouldSucceed=false
+GET {{host}}/retry/basic?shouldSucceed=false
 
 ###
 ### 26. 测试条件重试 - 临时异常
-GET http://localhost:8080/retry/conditional?exceptionType=temporary
+GET {{host}}/retry/conditional?exceptionType=temporary
 
 ###
 ### 27. 测试SpEL重试 - 关键优先级
-GET http://localhost:8080/retry/spel?shouldSucceed=false&priority=critical
+GET {{host}}/retry/spel?shouldSucceed=false&priority=critical
 
 ###
 ### 28. 最终重置
-POST http://localhost:8080/retry/reset
+POST {{host}}/retry/reset
 
 ###
 ### =================
@@ -148,19 +271,19 @@ POST http://localhost:8080/retry/reset
 
 ###
 ### 29. 快速连续调用测试（观察重试计数）
-GET http://localhost:8080/retry/basic?shouldSucceed=false
+GET {{host}}/retry/basic?shouldSucceed=false
 
 ###
 ### 30. 重复上次调用
-GET http://localhost:8080/retry/basic?shouldSucceed=false
+GET {{host}}/retry/basic?shouldSucceed=false
 
 ###
 ### 31. 重复上次调用
-GET http://localhost:8080/retry/basic?shouldSucceed=false
+GET {{host}}/retry/basic?shouldSucceed=false
 
 ###
 ### 32. 查看所有示例结果
-GET http://localhost:8080/retry/all-examples
+GET {{host}}/retry/all-examples
 
 ###
 ### =================
@@ -169,16 +292,16 @@ GET http://localhost:8080/retry/all-examples
 
 ###
 ### 33. 测试无效的异常类型
-GET http://localhost:8080/retry/conditional?exceptionType=invalid
+GET {{host}}/retry/conditional?exceptionType=invalid
 
 ###
 ### 34. 测试无效的优先级
-GET http://localhost:8080/retry/spel?shouldSucceed=false&priority=invalid
+GET {{host}}/retry/spel?shouldSucceed=false&priority=invalid
 
 ###
 ### 35. 测试空参数
-GET http://localhost:8080/retry/conditional?exceptionType=
+GET {{host}}/retry/conditional?exceptionType=
 
 ###
 ### 36. 测试空优先级
-GET http://localhost:8080/retry/spel?priority=
+GET {{host}}/retry/spel?priority=

@@ -1,5 +1,7 @@
 package com.example.demo.service;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.annotation.Backoff;
@@ -16,8 +18,6 @@ import com.example.demo.exception.TemporaryException;
 
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Spring Retry示例服务类
@@ -162,7 +162,7 @@ public class RetryService {
     /**
      * 编程式重试示例 - 使用RetryTemplate
      */
-    public String imperativeRetryExample(boolean shouldSucceed) {
+    public String imperativeRetryExample(boolean shouldSucceed) throws Exception {
         return retryTemplate.execute(
             // RetryCallback - 执行的业务逻辑
             (RetryCallback<String, Exception>) context -> {
