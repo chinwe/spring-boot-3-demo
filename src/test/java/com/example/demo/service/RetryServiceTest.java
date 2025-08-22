@@ -1,17 +1,17 @@
 package com.example.demo.service;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
 import com.example.demo.exception.BusinessException;
-import com.example.demo.exception.NetworkException;
-import com.example.demo.exception.TemporaryException;
 
 import jakarta.annotation.Resource;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * RetryService 单元测试
@@ -105,7 +105,7 @@ class RetryServiceTest {
     }
 
     @Test
-    void testImperativeRetryExample_Success() {
+    void testImperativeRetryExample_Success() throws Exception {
         // 测试编程式重试成功
         String result = retryService.imperativeRetryExample(true);
         assertNotNull(result);
@@ -113,7 +113,7 @@ class RetryServiceTest {
     }
 
     @Test
-    void testImperativeRetryExample_FailureWithRecovery() {
+    void testImperativeRetryExample_FailureWithRecovery() throws Exception {
         // 测试编程式重试失败后恢复
         String result = retryService.imperativeRetryExample(false);
         assertNotNull(result);
@@ -165,7 +165,7 @@ class RetryServiceTest {
     }
 
     @Test
-    void testMultipleRetryOperations() {
+    void testMultipleRetryOperations() throws Exception {
         // 测试多个重试操作的独立性
         String result1 = retryService.basicRetryExample(true);
         String result2 = retryService.localServiceCall(true);
