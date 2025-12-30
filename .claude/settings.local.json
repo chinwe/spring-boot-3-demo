@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(claude plugin marketplace add:*)",
+      "Bash(plugin install zai-org/zai-coding-plugins)",
+      "Skill(glm-plan-usage:usage-query)",
+      "Bash(where:*)",
+      "Bash(claude:*)",
+      "Bash(set CLAUDE_CODE_GIT_BASH_PATH=D:Program FilesGitbinbash.exe:*)"
+    ]
+  }
+}
