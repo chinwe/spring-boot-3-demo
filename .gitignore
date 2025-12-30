@@ -1,0 +1,7 @@
+*.iml
+*.jar
+*.class
+/target/
+/.idea/
+/.vscode/
+/.claude/
