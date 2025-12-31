@@ -1,8 +1,8 @@
 *.iml
 *.jar
 *.class
-/target/
-/.idea/
-/.vscode/
-/.claude/
-/settings.local.json
+target
+.idea
+.vscode
+.claude
+.kiro
