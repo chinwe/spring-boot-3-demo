@@ -31,6 +31,7 @@ import com.example.demo.entity.OrderItem;
 /**
  * OrderMapper 完整功能测试
  * <p>
+ *
  * 测试覆盖：
  * 1. 基本对象映射
  * 2. 嵌套对象映射
@@ -41,6 +42,7 @@ import com.example.demo.entity.OrderItem;
  * 7. 默认值和常量
  * 8. 验证逻辑
  *
+ * 
  * @author chinwe
  */
 @SpringBootTest
