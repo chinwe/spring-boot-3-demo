@@ -202,17 +202,17 @@ class OrderMapperTest {
         @org.junit.jupiter.api.Order(6)
         @DisplayName("测试状态显示转换")
         void testStatusDisplayConversion() {
-            // Test various statuses
-            testOrder.setStatus(Order.OrderStatus.PENDING);
-            OrderDto dto1 = orderMapper.toOrderDto(testOrder);
+            // Test various statuses - create independent order instances to avoid state pollution
+            Order pendingOrder = createTestOrder(100L, "ORD-2024-001", Order.OrderStatus.PENDING);
+            OrderDto dto1 = orderMapper.toOrderDto(pendingOrder);
             assertEquals("Pending", dto1.getStatusDisplay());
 
-            testOrder.setStatus(Order.OrderStatus.SHIPPED);
-            OrderDto dto2 = orderMapper.toOrderDto(testOrder);
+            Order shippedOrder = createTestOrder(101L, "ORD-2024-002", Order.OrderStatus.SHIPPED);
+            OrderDto dto2 = orderMapper.toOrderDto(shippedOrder);
             assertEquals("Shipped", dto2.getStatusDisplay());
 
-            testOrder.setStatus(Order.OrderStatus.DELIVERED);
-            OrderDto dto3 = orderMapper.toOrderDto(testOrder);
+            Order deliveredOrder = createTestOrder(102L, "ORD-2024-003", Order.OrderStatus.DELIVERED);
+            OrderDto dto3 = orderMapper.toOrderDto(deliveredOrder);
             assertEquals("Delivered", dto3.getStatusDisplay());
         }
     }
@@ -519,5 +519,24 @@ class OrderMapperTest {
                     "Status " + status + " should display as " + expected);
             }
         }
+    }
+
+    /**
+     * 创建独立测试订单的辅助方法
+     * 避免测试间共享状态导致的状态污染问题
+     */
+    private Order createTestOrder(Long id, String orderNumber, Order.OrderStatus status) {
+        Order order = new Order();
+        order.setId(id);
+        order.setOrderNumber(orderNumber);
+        order.setOrderDate(LocalDateTime.now());
+        order.setStatus(status);
+        order.setCustomer(testCustomer);
+        order.setItems(new ArrayList<>(testItems));
+        order.setRemarks("Test remarks");
+        order.setTotalAmount(100.0);
+        order.setCreatedAt(LocalDateTime.now());
+        order.setUpdatedAt(LocalDateTime.now());
+        return order;
     }
 }
