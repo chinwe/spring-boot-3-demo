@@ -192,23 +192,16 @@ public class JooqOrderRepository {
      * @return 订单 DTO，不存在返回 null
      */
     public JooqOrderDto findOrderWithUserAndItemsById(Long orderId) {
-        // Query order with user
-        Record orderRecord = dsl.select(
-                ORDER_ID,
-                ORDER_NUMBER,
-                table(ORDERS_TABLE).field(USER_ID),
-                TOTAL_AMOUNT,
-                STATUS,
-                REMARKS,
-                ORDER_CREATED_AT,
-                ORDER_UPDATED_AT,
-                USERNAME
-            )
-            .from(table(ORDERS_TABLE))
-            .leftJoin(table(USERS_TABLE))
-            .on(table(ORDERS_TABLE).field(USER_ID).eq(USER_ID_FIELD))
-            .where(table(ORDERS_TABLE).field(ORDER_ID).eq(orderId))
-            .fetchOne();
+        // Query order with user - using plain SQL to avoid H2 alias issues
+        String sql = """
+            SELECT o.id, o.order_number, o.user_id, o.total_amount, o.status,
+                   o.remarks, o.created_at, o.updated_at, u.username
+            FROM j_orders o
+            LEFT JOIN j_users u ON o.user_id = u.id
+            WHERE o.id = ?
+            """;
+
+        Record orderRecord = dsl.fetchOne(sql, orderId);
 
         if (orderRecord == null) {
             return null;
@@ -232,15 +225,15 @@ public class JooqOrderRepository {
             .build());
 
         return JooqOrderDto.builder()
-            .id(orderRecord.get(ORDER_ID))
-            .orderNumber(orderRecord.get(ORDER_NUMBER))
-            .userId(orderRecord.get(USER_ID))
-            .username(orderRecord.get(USERNAME))
-            .totalAmount(orderRecord.get(TOTAL_AMOUNT))
-            .status(orderRecord.get(STATUS))
-            .remarks(orderRecord.get(REMARKS))
-            .createdAt(orderRecord.get(ORDER_CREATED_AT))
-            .updatedAt(orderRecord.get(ORDER_UPDATED_AT))
+            .id(orderRecord.get(0, Long.class))
+            .orderNumber(orderRecord.get(1, String.class))
+            .userId(orderRecord.get(2, Long.class))
+            .username(orderRecord.get(8, String.class))
+            .totalAmount(orderRecord.get(3, BigDecimal.class))
+            .status(orderRecord.get(4, String.class))
+            .remarks(orderRecord.get(5, String.class))
+            .createdAt(orderRecord.get(6, LocalDateTime.class))
+            .updatedAt(orderRecord.get(7, LocalDateTime.class))
             .items(items)
             .build();
     }
