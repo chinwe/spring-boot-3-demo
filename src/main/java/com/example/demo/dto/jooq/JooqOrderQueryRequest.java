@@ -2,6 +2,8 @@ package com.example.demo.dto.jooq;
 
 import java.time.LocalDateTime;
 
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,6 +24,8 @@ public class JooqOrderQueryRequest {
 
     private String status;
 
+    @Size(max = 50, message = "订单号长度不能超过50个字符")
+    @Pattern(regexp = "^[A-Z0-9-]+$", message = "订单号格式不正确")
     private String orderNumber;
 
     private LocalDateTime startTime;
