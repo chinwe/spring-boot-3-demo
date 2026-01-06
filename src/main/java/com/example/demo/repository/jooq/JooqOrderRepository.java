@@ -134,7 +134,7 @@ public class JooqOrderRepository {
         }
 
         // Query order items
-        Result<Record> itemRecords = dsl.select(
+        var itemRecords = dsl.select(
                 ITEM_ID, ITEM_ORDER_ID, ITEM_PRODUCT_ID, QUANTITY, PRICE, SUBTOTAL
             )
             .from(table(ORDER_ITEMS_TABLE))
@@ -206,8 +206,8 @@ public class JooqOrderRepository {
             )
             .from(table(ORDERS_TABLE))
             .leftJoin(table(USERS_TABLE))
-            .on(USER_ID.eq(USER_ID_FIELD))
-            .where(ORDER_ID.eq(orderId))
+            .on(table(ORDERS_TABLE).field(USER_ID).eq(USER_ID_FIELD))
+            .where(table(ORDERS_TABLE).field(ORDER_ID).eq(orderId))
             .fetchOne();
 
         if (orderRecord == null) {
@@ -215,7 +215,7 @@ public class JooqOrderRepository {
         }
 
         // Query order items
-        Result<Record> itemRecords = dsl.select(
+        var itemRecords = dsl.select(
                 ITEM_ID, ITEM_ORDER_ID, ITEM_PRODUCT_ID, QUANTITY, PRICE, SUBTOTAL
             )
             .from(table(ORDER_ITEMS_TABLE))
@@ -301,7 +301,7 @@ public class JooqOrderRepository {
             .fetchOne();
 
         // Count by status
-        Result<Record> statusRecords = dsl.select(
+        var statusRecords = dsl.select(
                 STATUS,
                 count().as("count")
             )
