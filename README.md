@@ -207,6 +207,73 @@ GET http://localhost:8080/test/user
 
 - chinw
 
+## JOOQ 电商订单系统示例
+
+项目包含一个完整的 JOOQ 电商订单系统示例，展示了 JOOQ 的各种功能。
+
+### 功能特性
+
+- **CRUD 操作**: 用户、商品、订单的基础增删改查
+- **复杂查询**: JOIN、子查询、聚合函数、分组统计
+- **事务管理**: 创建订单的完整事务流程
+- **高级特性**: 批量操作、Upsert、分页查询
+
+### API 文档
+
+访问 Swagger UI 查看完整 API 文档:
+- **Swagger UI**: `http://localhost:8080/swagger-ui.html`
+
+### 主要接口
+
+#### 用户管理
+- `POST /api/jooq/users` - 创建用户
+- `GET /api/jooq/users/{id}` - 查询用户
+- `GET /api/jooq/users` - 查询所有用户
+- `GET /api/jooq/users/username/{username}` - 根据用户名查询
+
+#### 商品管理
+- `POST /api/jooq/products` - 创建商品
+- `POST /api/jooq/products/batch` - 批量创建商品
+- `GET /api/jooq/products/{id}` - 查询商品
+- `GET /api/jooq/products?category=Electronics&page=0&size=10` - 按分类分页查询
+- `GET /api/jooq/products/low-stock?threshold=10` - 查询低库存商品
+- `GET /api/jooq/products/stock/{category}` - 查询分类库存统计
+
+#### 订单管理
+- `POST /api/jooq/orders` - 创建订单（事务操作）
+- `GET /api/jooq/orders/{id}` - 查询订单详情（包含用户和商品信息）
+- `GET /api/jooq/users/{userId}/orders` - 查询用户订单列表
+- `GET /api/jooq/orders/statistics` - 订单统计信息
+
+### 使用示例
+
+#### 创建订单示例
+
+```bash
+curl -X POST http://localhost:8080/api/jooq/orders \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": 1,
+    "items": [
+      {"productId": 1, "quantity": 2},
+      {"productId": 2, "quantity": 1}
+    ],
+    "remarks": "请尽快发货"
+  }'
+```
+
+#### 查询低库存商品
+
+```bash
+curl http://localhost:8080/api/jooq/products/low-stock?threshold=10
+```
+
+#### 订单统计
+
+```bash
+curl http://localhost:8080/api/jooq/orders/statistics
+```
+
 ---
 
 这个项目展示了现代Spring Boot应用程序的标准架构模式，适合作为新项目的起始模板或学习参考。

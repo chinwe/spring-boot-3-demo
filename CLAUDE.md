@@ -114,6 +114,20 @@ annotation/     # 自定义注解
 - **特点**: 编译时生成映射代码，零反射开销
 - **重要**: MapStruct 与 Lombok 集成需要在 `maven-compiler-plugin` 中正确配置注解处理器顺序
 
+#### 4. JOOQ 模块
+- **位置**: `repository/jooq/`, `service/jooq/`, `controller/jooq/`
+- **功能**: 展示 JOOQ 的各种功能
+- **特点**:
+  - **CRUD 操作**: 基础的增删改查
+  - **复杂查询**: JOIN、聚合、分组统计
+  - **事务管理**: 声明式事务处理
+  - **高级特性**: 批量操作、Upsert、分页
+- **表设计**:
+  - `j_users`: 用户表
+  - `j_products`: 商品表
+  - `j_orders`: 订单表
+  - `j_order_items`: 订单项表
+
 ## 技术栈要点
 
 ### Java 21 特性
