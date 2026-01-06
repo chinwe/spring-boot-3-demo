@@ -145,4 +145,59 @@ class JooqUserRepositoryTest {
         assertNotNull(users);
         assertTrue(users.size() >= 2);
     }
+
+    @Test
+    void testUpdateNonExistentUser() {
+        // Given
+        JooqUserDto user = JooqUserDto.builder()
+            .id(99999L)
+            .username("testuser")
+            .email("test@example.com")
+            .build();
+
+        // When
+        boolean updated = repository.update(user);
+
+        // Then
+        assertFalse(updated);
+    }
+
+    @Test
+    void testDeleteNonExistentUser() {
+        // When
+        boolean deleted = repository.delete(99999L);
+
+        // Then
+        assertFalse(deleted);
+    }
+
+    @Test
+    void testInsertNullUser() {
+        // When & Then
+        assertThrows(IllegalArgumentException.class, () -> {
+            repository.insert(null);
+        });
+    }
+
+    @Test
+    void testUpdateNullUser() {
+        // When & Then
+        assertThrows(IllegalArgumentException.class, () -> {
+            repository.update(null);
+        });
+    }
+
+    @Test
+    void testUpdateUserWithNullId() {
+        // Given
+        JooqUserDto user = JooqUserDto.builder()
+            .username("testuser")
+            .email("test@example.com")
+            .build();
+
+        // When & Then
+        assertThrows(IllegalArgumentException.class, () -> {
+            repository.update(user);
+        });
+    }
 }

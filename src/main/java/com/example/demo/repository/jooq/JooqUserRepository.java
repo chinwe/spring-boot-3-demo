@@ -47,8 +47,13 @@ public class JooqUserRepository {
      *
      * @param user 用户 DTO
      * @return 生成的 ID
+     * @throws IllegalArgumentException 如果 user 为 null
      */
     public Long insert(JooqUserDto user) {
+        if (user == null) {
+            throw new IllegalArgumentException("User cannot be null");
+        }
+
         Record record = dsl.insertInto(
                 table(TABLE_NAME),
                 USERNAME, EMAIL, PHONE, CREATED_AT, UPDATED_AT
@@ -101,8 +106,16 @@ public class JooqUserRepository {
      *
      * @param user 用户 DTO
      * @return 是否更新成功
+     * @throws IllegalArgumentException 如果 user 为 null 或 user ID 为 null
      */
     public boolean update(JooqUserDto user) {
+        if (user == null) {
+            throw new IllegalArgumentException("User cannot be null");
+        }
+        if (user.getId() == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
+
         int affected = dsl.update(table(TABLE_NAME))
             .set(USERNAME, user.getUsername())
             .set(EMAIL, user.getEmail())
