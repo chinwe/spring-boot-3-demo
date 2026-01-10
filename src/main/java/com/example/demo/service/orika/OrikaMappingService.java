@@ -3,25 +3,26 @@ package com.example.demo.service.orika;
 import java.time.ZoneOffset;
 import java.util.List;
 
-import jakarta.annotation.Resource;
-import lombok.extern.slf4j.Slf4j;
-
-import ma.glasnost.orika.MapperFacade;
-
-import org.springframework.stereotype.Service;
-
 import com.example.demo.dto.OrderDto;
 import com.example.demo.dto.UserDto;
 import com.example.demo.entity.Order;
 import com.example.demo.entity.User;
+import com.example.demo.mapper.orika.OrikaOrderMapper;
+import com.example.demo.mapper.orika.OrikaUserMapper;
+
+import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.stereotype.Service;
 
 /**
- * Orika 映射服务
+ * Orika 映射服务 - MapStruct 实现
  *
  * 功能特性：
- * 1. 封装 Orika 映射操作
+ * 1. 封装 MapStruct 映射操作
  * 2. 提供便捷的映射方法
- * 3. 展示 Orika 核心特性
+ * 3. 展示 MapStruct 核心特性
+ * 4. 保持与原 Orika 实现相同的 API
  *
  * @author chinwe
  */
@@ -30,15 +31,21 @@ import com.example.demo.entity.User;
 public class OrikaMappingService {
 
     /**
-     * Orika MapperFacade（线程安全，可并发使用）
+     * MapStruct User Mapper
      */
     @Resource
-    private MapperFacade mapperFacade;
+    private OrikaUserMapper userMapper;
+
+    /**
+     * MapStruct Order Mapper
+     */
+    @Resource
+    private OrikaOrderMapper orderMapper;
 
     /**
      * 基础对象映射：User -> UserDto
      *
-     * 展示 Orika 的基础映射功能：
+     * 展示 MapStruct 的基础映射功能：
      * - 同名字段自动映射
      * - 类型安全保证
      *
@@ -52,7 +59,7 @@ public class OrikaMappingService {
         }
 
         log.debug("Mapping User to UserDto: id={}, name={}", user.getId(), user.getName());
-        UserDto dto = mapperFacade.map(user, UserDto.class);
+        UserDto dto = userMapper.toUserDto(user);
         log.debug("Mapped UserDto: name={}, email={}", dto.getName(), dto.getEmail());
 
         return dto;
@@ -71,7 +78,7 @@ public class OrikaMappingService {
         }
 
         log.debug("Mapping UserDto to User: name={}", dto.getName());
-        User user = mapperFacade.map(dto, User.class);
+        User user = userMapper.toUser(dto);
         log.debug("Mapped User: id={}, name={}", user.getId(), user.getName());
 
         return user;
@@ -80,7 +87,7 @@ public class OrikaMappingService {
     /**
      * 复杂对象映射：Order -> OrderDto
      *
-     * 展示 Orika 的高级映射功能：
+     * 展示 MapStruct 的高级映射功能：
      * - 嵌套对象映射（customer.fullName -> customerName）
      * - 自定义转换器（LocalDateTime -> String, Enum -> String）
      * - 字段重命名
@@ -95,9 +102,9 @@ public class OrikaMappingService {
         }
 
         log.debug("Mapping Order to OrderDto: id={}, orderNumber={}", order.getId(), order.getOrderNumber());
-        OrderDto dto = mapperFacade.map(order, OrderDto.class);
+        OrderDto dto = orderMapper.toOrderDto(order);
 
-        // 设置标识字段，区分映射工具
+        // 设置标识字段，区分映射工具（保持与 Orika 相同的行为）
         dto.setMappedBy("Orika");
 
         // 计算并设置时间戳
@@ -119,7 +126,7 @@ public class OrikaMappingService {
     /**
      * 集合映射：List<Order> -> List<OrderDto>
      *
-     * 展示 Orika 的集合映射功能
+     * 展示 MapStruct 的集合映射功能
      *
      * @param orders 源 Order 列表
      * @return 映射后的 OrderDto 列表
@@ -132,10 +139,10 @@ public class OrikaMappingService {
 
         log.debug("Mapping Order list to OrderDto list: size={}", orders.size());
 
-        // 使用 Orika 的 mapAsList 方法进行集合映射
-        List<OrderDto> dtoList = mapperFacade.mapAsList(orders, OrderDto.class);
+        // 使用 MapStruct 进行集合映射
+        List<OrderDto> dtoList = orderMapper.toOrderDtoList(orders);
 
-        // 为每个 DTO 设置标识字段和计算字段
+        // 为每个 DTO 设置标识字段和计算字段（保持与 Orika 相同的行为）
         dtoList.forEach(dto -> {
             dto.setMappedBy("Orika");
             if (dto.getOrderNumber() != null) {
