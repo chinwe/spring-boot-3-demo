@@ -32,9 +32,12 @@ mvn test
 mvn test -Dtest=RetryServiceTest
 mvn test -Dtest=AsyncControllerTest
 mvn test -Dtest=OrderMapperTest
+mvn test -Dtest=JooqIntegrationTest
+mvn test -Dtest=OrikaMappingServiceTest
 
 # 运行特定包下的测试
 mvn test -Dtest=com.example.demo.controller.*
+mvn test -Dtest=com.example.demo.service.jooq.*
 
 # 运行集成测试
 mvn test -Dtest=AsyncIntegrationTest
@@ -58,40 +61,97 @@ mvn compile
 项目遵循经典的分层架构模式：
 
 ```
-controller/     # 控制器层 - 处理 HTTP 请求
-    - AsyncController      # 异步处理相关接口
-    - RetryController      # 重试相关接口
-    - TestController       # 基础测试接口
-
-service/        # 服务层 - 业务逻辑
-    - AsyncService         # 异步业务逻辑
-    - RetryService         # 重试业务逻辑
-    - AsyncMetricsService  # 异步指标收集
-
-mapper/         # 数据映射层 - MapStruct 映射器
-    - UserMapper           # 用户对象映射
-    - OrderMapper          # 订单对象映射
-    - OrderItemMapper      # 订单项对象映射
-    - AddressMapper        # 地址对象映射
-
-dto/            # 数据传输对象 - 用于 API 交互
-vo/             # 值对象 - 用于视图展示
-entity/         # 实体类 - 领域模型
-
-configuration/  # 配置类
-    - RetryConfiguration      # Spring Retry 配置
-    - AsyncConfiguration      # 异步线程池配置
-    - DemoRetryConfiguration  # 演示配置
-
-annotation/     # 自定义注解
-    - @LocalRetryable         # 本地服务重试注解
-    - @RemoteRetryable        # 远程服务重试注解
+com.example.demo/
+├── DemoApplication.java                 # 主启动类
+│
+├── controller/                          # 控制器层 - 处理 HTTP 请求
+│   ├── AsyncController.java            # 异步处理相关接口
+│   ├── RetryController.java            # 重试相关接口
+│   ├── TestController.java             # 基础测试接口
+│   ├── jooq/                          # JOOQ 控制器
+│   │   └── JooqController.java        # JOOQ 电商系统接口
+│   └── orika/                         # Orika 映射控制器
+│       └── OrikaController.java        # Orika 对象映射演示
+│
+├── service/                            # 服务层 - 业务逻辑
+│   ├── AsyncService.java               # 异步业务逻辑
+│   ├── RetryService.java               # 重试业务逻辑
+│   ├── AsyncMetricsService.java        # 异步指标收集
+│   ├── jooq/                          # JOOQ 服务
+│   │   ├── JooqUserService.java       # 用户服务
+│   │   ├── JooqProductService.java     # 商品服务
+│   │   ├── JooqOrderService.java      # 订单服务
+│   │   └── JooqTransactionService.java # 事务管理服务
+│   └── orika/                         # Orika 映射服务
+│       └── OrikaMappingService.java     # Orika 映射实现
+│
+├── mapper/                             # 数据映射层 - MapStruct 映射器
+│   ├── UserMapper.java                 # 用户对象映射
+│   ├── OrderMapper.java                # 订单对象映射
+│   ├── OrderItemMapper.java            # 订单项对象映射
+│   ├── AddressMapper.java              # 地址对象映射
+│   └── orika/                          # Orika 映射器
+│       ├── OrikaUserMapper.java        # 用户 Orika 映射器
+│       ├── OrikaOrderMapper.java       # 订单 Orika 映射器
+│       └── OrikaAddressMapper.java     # 地址 Orika 映射器
+│
+├── repository/                         # 数据访问层
+│   └── jooq/                          # JOOQ 仓库
+│       ├── JooqUserRepository.java     # 用户仓库
+│       ├── JooqProductRepository.java  # 商品仓库
+│       └── JooqOrderRepository.java   # 订单仓库
+│
+├── dto/                                # 数据传输对象 - 用于 API 交互
+│   ├── UserDto.java                    # 用户 DTO
+│   ├── OrderDto.java                   # 订单 DTO
+│   ├── OrderItemDto.java               # 订单项 DTO
+│   ├── AddressDto.java                 # 地址 DTO
+│   ├── AsyncTaskDto.java              # 异步任务 DTO
+│   ├── AsyncErrorResponse.java         # 异步错误响应 DTO
+│   └── jooq/                          # JOOQ DTO
+│       ├── JooqUserDto.java            # 用户 DTO
+│       ├── JooqProductDto.java          # 商品 DTO
+│       ├── JooqOrderDto.java           # 订单 DTO
+│       ├── JooqOrderItemDto.java       # 订单项 DTO
+│       ├── JooqCreateOrderRequest.java  # 创建订单请求
+│       ├── JooqCreateProductRequest.java # 创建商品请求
+│       └── JooqOrderQueryRequest.java   # 订单查询请求
+│
+├── vo/                                 # 值对象 - 用于视图展示
+│   ├── AsyncTaskVo.java               # 异步任务 VO
+│   └── DelayVo.java                    # 延迟 VO
+│
+├── entity/                            # 实体类 - 领域模型
+│   ├── User.java                       # 用户实体
+│   ├── Order.java                      # 订单实体
+│   ├── OrderItem.java                  # 订单项实体
+│   ├── Address.java                    # 地址实体
+│   └── Customer.java                   # 客户实体
+│
+├── configuration/                      # 配置类
+│   ├── AsyncConfiguration.java         # 异步线程池配置
+│   ├── RetryConfiguration.java         # Spring Retry 配置
+│   └── DemoRetryConfiguration.java    # 演示配置
+│
+├── annotation/                         # 自定义注解
+│   ├── LocalRetryable.java             # 本地服务重试注解
+│   └── RemoteRetryable.java            # 远程服务重试注解
+│
+├── exception/                         # 异常类
+│   ├── TemporaryException.java        # 临时异常（可重试）
+│   ├── NetworkException.java          # 网络异常（适合重试）
+│   ├── BusinessException.java         # 业务异常（不可重试）
+│   ├── AsyncExceptionHandler.java      # 异步异常处理器
+│   └── JooqExceptionHandler.java      # JOOQ 异常处理器
+│
+└── listener/                          # 监听器
+    └── CustomRetryListener.java        # 自定义重试监听器
 ```
 
 ### 核心功能模块
 
 #### 1. Spring Retry 模块
-- **位置**: `service/RetryService`, `controller/RetryController`
+- **位置**: `service.RetryService`, `controller.RetryController`
 - **功能**: 展示声明式和编程式重试的各种场景
 - **特点**:
   - 自定义 `@LocalRetryable` 和 `@RemoteRetryable` 注解
@@ -100,23 +160,26 @@ annotation/     # 自定义注解
   - 区分临时异常（可重试）和业务异常（不可重试）
 
 #### 2. 异步处理模块
-- **位置**: `service/AsyncService`, `controller/AsyncController`
+- **位置**: `service.AsyncService`, `controller.AsyncController`
 - **功能**: 异步任务执行和回调
 - **配置**: `AsyncConfiguration` 配置异步线程池
   - 核心线程数: 5
   - 最大线程数: 20
   - 队列容量: 100
   - 线程存活时间: 60s
+- **支持方式**: CompletableFuture、DeferredResult、Callable
 
 #### 3. 对象映射模块
-- **位置**: `mapper/` 包
-- **工具**: MapStruct 1.6.3
-- **特点**: 编译时生成映射代码，零反射开销
-- **重要**: MapStruct 与 Lombok 集成需要在 `maven-compiler-plugin` 中正确配置注解处理器顺序
+- **位置**: `mapper/` 和 `mapper/orika/` 包
+- **工具**: MapStruct 1.6.3 和 Orika
+- **特点**:
+  - **MapStruct**: 编译时生成映射代码，零反射开销
+  - **Orika**: 运行时映射，支持复杂转换器
+  - 重要: MapStruct 与 Lombok 集成需要在 `maven-compiler-plugin` 中正确配置注解处理器顺序
 
 #### 4. JOOQ 模块
 - **位置**: `repository/jooq/`, `service/jooq/`, `controller/jooq/`
-- **功能**: 展示 JOOQ 的各种功能
+- **功能**: 完整的电商系统演示
 - **特点**:
   - **CRUD 操作**: 基础的增删改查
   - **复杂查询**: JOIN、聚合、分组统计
@@ -129,6 +192,26 @@ annotation/     # 自定义注解
   - `j_order_items`: 订单项表
 
 ## 技术栈要点
+
+### 核心依赖
+```xml
+<!-- Spring Boot -->
+<spring.boot.version>3.5.9</spring.boot.version>
+
+<!-- 数据库访问 -->
+<jooq.version>3.19.15</jooq.version>
+
+<!-- 对象映射 -->
+<mapstruct.version>1.6.3</mapstruct.version>
+<orika.version>1.5.4</orika.version>
+
+<!-- API 文档 -->
+<springdoc.version>2.8.0</springdoc.version>
+
+<!-- 测试框架 -->
+<junit-jupiter.version>5.11.4</junit-jupiter.version>
+<testcontainers.version>1.20.4</testcontainers.version>
+```
 
 ### Java 21 特性
 - 项目使用 Java 21，可以使用最新的 Java 特性（如虚拟线程、模式匹配等）
@@ -168,6 +251,125 @@ annotation/     # 自定义注解
 - **Swagger UI**: `http://localhost:8080/swagger-ui.html`
 - **OpenAPI JSON**: `http://localhost:8080/v3/api-docs`
 
+### API 接口列表
+
+#### 异步处理接口 (`/async`)
+| 方法 | 路径 | 描述 |
+|------|------|------|
+| GET | `/async/completable-future/{taskName}` | CompletableFuture 示例 |
+| POST | `/async/deferred-result` | DeferredResult 示例 |
+| GET | `/async/callable/{delaySeconds}` | Callable 示例 |
+| GET | `/async/concurrent-test` | 并发请求示例 |
+| GET | `/async/metrics` | 获取异步指标 |
+| POST | `/async/metrics/reset` | 重置指标 |
+
+#### 重试机制接口 (`/retry`)
+| 方法 | 路径 | 描述 |
+|------|------|------|
+| GET | `/retry/basic` | 基本重试示例 |
+| GET | `/retry/local` | 本地服务重试 |
+| GET | `/retry/remote` | 远程服务重试 |
+| GET | `/retry/conditional` | 条件重试 |
+| GET | `/retry/imperative` | 编程式重试 |
+| GET | `/retry/spel` | SpEL 表达式重试 |
+| GET | `/retry/all-examples` | 执行所有示例 |
+
+#### JOOQ 电商接口 (`/api/jooq`)
+
+**用户管理**:
+| 方法 | 路径 | 描述 |
+|------|------|------|
+| POST | `/api/jooq/users` | 创建用户 |
+| GET | `/api/jooq/users/{id}` | 查询用户 |
+| GET | `/api/jooq/users` | 查询所有用户 |
+| GET | `/api/jooq/users/username/{username}` | 按用户名查询 |
+
+**商品管理**:
+| 方法 | 路径 | 描述 |
+|------|------|------|
+| POST | `/api/jooq/products` | 创建商品 |
+| POST | `/api/jooq/products/batch` | 批量创建商品 |
+| GET | `/api/jooq/products/{id}` | 查询商品 |
+| GET | `/api/jooq/products` | 按分类查询（支持分页） |
+| GET | `/api/jooq/products/low-stock` | 查询低库存商品 |
+| GET | `/api/jooq/products/stock/{category}` | 查询分类库存统计 |
+
+**订单管理**:
+| 方法 | 路径 | 描述 |
+|------|------|------|
+| POST | `/api/jooq/orders` | 创建订单（事务） |
+| GET | `/api/jooq/orders/{id}` | 查询订单详情 |
+| GET | `/api/jooq/users/{userId}/orders` | 查询用户订单 |
+| GET | `/api/jooq/orders/statistics` | 订单统计 |
+
+#### Orika 映射接口 (`/orika`)
+| 方法 | 路径 | 描述 |
+|------|------|------|
+| GET | `/orika/user` | 基础对象映射 |
+| GET | `/orika/order` | 复杂对象映射 |
+| GET | `/orika/orders` | 集合映射 |
+| POST | `/orika/batch` | 批量映射 |
+
+#### 测试接口 (`/test`)
+| 方法 | 路径 | 描述 |
+|------|------|------|
+| GET | `/test/hello` | 基础测试接口 |
+| GET | `/test/echo/{message}` | 回显消息 |
+
+## 数据库设计
+
+### JOOQ 电商表结构
+
+```sql
+-- 用户表
+CREATE TABLE j_users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    phone VARCHAR(20),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 商品表
+CREATE TABLE j_products (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(200) NOT NULL,
+    description VARCHAR(500),
+    price DECIMAL(10, 2) NOT NULL,
+    stock INT NOT NULL DEFAULT 0,
+    category VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 订单表
+CREATE TABLE j_orders (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    order_number VARCHAR(50) NOT NULL UNIQUE,
+    user_id BIGINT NOT NULL,
+    total_amount DECIMAL(10, 2) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    remarks VARCHAR(500),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES j_users(id)
+);
+
+-- 订单项表
+CREATE TABLE j_order_items (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    order_id BIGINT NOT NULL,
+    product_id BIGINT NOT NULL,
+    quantity INT NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    subtotal DECIMAL(10, 2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (order_id) REFERENCES j_orders(id),
+    FOREIGN KEY (product_id) REFERENCES j_products(id)
+);
+```
+
 ## 代码规范
 
 1. **代码和日志**: 使用英文
@@ -184,8 +386,50 @@ annotation/     # 自定义注解
 ### 服务器配置
 - 默认端口: 8080
 
+### 数据库配置
+- H2 内存数据库
+- 自动执行 schema.sql 初始化脚本
+
 ## 测试策略
 
-- **单元测试**: 使用 Mockito 进行依赖模拟
-- **集成测试**: 使用 Testcontainers 进行容器化测试
-- **性能测试**: 包含异步性能测试
+### 单元测试
+- 使用 Mockito 进行依赖模拟
+- 覆盖控制器、服务、映射器等各层
+
+### 集成测试
+- 使用 Testcontainers 进行容器化测试
+- JOOQ 集成测试验证数据库操作
+- 异步集成测试验证并发处理能力
+
+### 性能测试
+- 异步性能测试 (`AsyncPerformanceTest`)
+- 对象映射性能对比测试
+
+## 测试文件结构
+
+```
+src/test/java/com/example/demo/
+├── AsyncIntegrationTest.java          # 异步集成测试
+├── AsyncPerformanceTest.java          # 异步性能测试
+├── TestContainerExampleTest.java      # Testcontainers 示例测试
+├── TestControllerTest.java            # 测试控制器单元测试
+├── TestControllerMockitoTest.java     # 测试控制器 Mockito 测试
+├── controller/
+│   ├── AsyncControllerTest.java       # 异步控制器测试
+│   ├── RetryControllerTest.java       # 重试控制器测试
+│   ├── jooq/
+│   │   └── JooqControllerTest.java    # JOOQ 控制器测试
+│   └── orika/
+│       └── OrikaControllerTest.java   # Orika 控制器测试
+├── service/
+│   ├── AsyncServiceTest.java          # 异步服务测试
+│   ├── RetryServiceTest.java          # 重试服务测试
+│   ├── jooq/
+│   │   └── JooqIntegrationTest.java   # JOOQ 集成测试
+│   └── orika/
+│       └── OrikaMappingServiceTest.java # Orika 映射服务测试
+├── mapper/
+│   └── OrderMapperTest.java           # 订单映射器测试
+└── exception/
+    └── AsyncExceptionHandlerTest.java # 异常处理器测试
+```
