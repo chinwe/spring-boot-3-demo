@@ -77,7 +77,7 @@ public class JooqProductRepository {
 
     /**
      * 批量插入商品
-     * 使用批量操作提高性能
+     * 使用真正的批量操作提高性能
      *
      * @param products 商品列表
      * @return 每条插入的记录数
@@ -87,8 +87,11 @@ public class JooqProductRepository {
             return new int[0];
         }
 
-        // Use batch insert with individual statements
-        return products.stream()
+        LocalDateTime now = LocalDateTime.now();
+
+        // 构建批量插入查询
+        @SuppressWarnings("unchecked")
+        org.jooq.Query[] queries = products.stream()
             .map(p -> dsl.insertInto(
                     table(TABLE_NAME),
                     NAME, DESCRIPTION, PRICE, STOCK, CATEGORY, CREATED_AT, UPDATED_AT
@@ -99,14 +102,13 @@ public class JooqProductRepository {
                     p.getPrice(),
                     p.getStock(),
                     p.getCategory(),
-                    LocalDateTime.now(),
-                    LocalDateTime.now()
-                )
-                .execute())
-            .toList()
-            .stream()
-            .mapToInt(i -> i)
-            .toArray();
+                    now,
+                    now
+                ))
+            .toArray(org.jooq.Query[]::new);
+
+        // 执行批量操作
+        return dsl.batch(queries).execute();
     }
 
     /**

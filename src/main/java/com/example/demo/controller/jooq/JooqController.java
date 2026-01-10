@@ -25,6 +25,8 @@ import com.example.demo.service.jooq.JooqUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -48,7 +50,7 @@ public class JooqController {
 
     @Operation(summary = "创建用户", description = "演示基础插入操作")
     @PostMapping("/users")
-    public String createUser(@RequestBody JooqUserDto user) {
+    public String createUser(@Valid @RequestBody JooqUserDto user) {
         Long id = userService.createUser(user);
         return "用户创建成功，ID: " + id;
     }
@@ -97,8 +99,8 @@ public class JooqController {
     @GetMapping("/products")
     public List<JooqProductDto> getProductsByCategory(
         @RequestParam String category,
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size
+        @RequestParam(defaultValue = "0") @Min(0) int page,
+        @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size
     ) {
         return productService.getProductsByCategory(category, page, size);
     }

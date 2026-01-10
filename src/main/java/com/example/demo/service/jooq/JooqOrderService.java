@@ -6,15 +6,18 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dto.jooq.JooqOrderDto;
+import com.example.demo.exception.JooqExceptionHandler.EntityNotFoundException;
 import com.example.demo.repository.jooq.JooqOrderRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * JOOQ 订单服务
  *
  * @author chinwe
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class JooqOrderService {
@@ -36,9 +39,16 @@ public class JooqOrderService {
      *
      * @param orderId 订单 ID
      * @return 订单 DTO
+     * @throws EntityNotFoundException 订单不存在时抛出
      */
     public JooqOrderDto getOrderById(Long orderId) {
-        return orderRepository.findOrderWithUserAndItemsById(orderId);
+        log.debug("Fetching order by id: {}", orderId);
+        JooqOrderDto order = orderRepository.findOrderWithUserAndItemsById(orderId);
+        if (order == null) {
+            log.warn("Order not found with id: {}", orderId);
+            throw new EntityNotFoundException("Order not found with id: " + orderId);
+        }
+        return order;
     }
 
     /**
@@ -48,6 +58,7 @@ public class JooqOrderService {
      * @return 订单列表
      */
     public List<JooqOrderDto> getOrdersByUserId(Long userId) {
+        log.debug("Fetching orders for user: {}", userId);
         return orderRepository.findOrdersByUserId(userId);
     }
 

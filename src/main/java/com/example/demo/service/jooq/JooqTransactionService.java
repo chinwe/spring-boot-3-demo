@@ -14,6 +14,7 @@ import com.example.demo.dto.jooq.JooqOrderDto;
 import com.example.demo.dto.jooq.JooqOrderItemDto;
 import com.example.demo.dto.jooq.JooqProductDto;
 import com.example.demo.dto.jooq.JooqUserDto;
+import com.example.demo.exception.JooqExceptionHandler.EntityNotFoundException;
 import com.example.demo.repository.jooq.JooqOrderRepository;
 import com.example.demo.repository.jooq.JooqProductRepository;
 import com.example.demo.repository.jooq.JooqUserRepository;
@@ -41,7 +42,8 @@ public class JooqTransactionService {
      *
      * @param request 创建订单请求
      * @return 订单 ID
-     * @throws IllegalArgumentException 如果用户不存在、商品不存在或库存不足
+     * @throws EntityNotFoundException 如果用户或商品不存在
+     * @throws IllegalArgumentException 如果库存不足
      * @throws IllegalStateException 如果扣减库存失败
      */
     @Transactional(rollbackFor = Exception.class)
@@ -51,7 +53,7 @@ public class JooqTransactionService {
         // 查询用户
         JooqUserDto user = userRepository.findById(request.getUserId());
         if (user == null) {
-            throw new IllegalArgumentException("用户不存在: " + request.getUserId());
+            throw new EntityNotFoundException("User not found with id: " + request.getUserId());
         }
 
         // 计算总金额并验证商品和库存
@@ -61,12 +63,12 @@ public class JooqTransactionService {
                 // 查询商品
                 JooqProductDto product = productRepository.findById(itemReq.getProductId());
                 if (product == null) {
-                    throw new IllegalArgumentException("商品不存在: " + itemReq.getProductId());
+                    throw new EntityNotFoundException("Product not found with id: " + itemReq.getProductId());
                 }
 
                 // 检查库存
                 if (product.getStock() < itemReq.getQuantity()) {
-                    throw new IllegalArgumentException("商品库存不足: " + product.getName());
+                    throw new IllegalArgumentException("Insufficient stock for product: " + product.getName());
                 }
 
                 // 计算小计
@@ -86,7 +88,7 @@ public class JooqTransactionService {
         for (OrderItemRequest item : request.getItems()) {
             boolean decreased = productRepository.decreaseStock(item.getProductId(), item.getQuantity());
             if (!decreased) {
-                throw new IllegalStateException("扣减库存失败: " + item.getProductId());
+                throw new IllegalStateException("Failed to decrease stock for product: " + item.getProductId());
             }
         }
 

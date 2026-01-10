@@ -69,18 +69,14 @@ class AsyncExceptionHandlerTest {
     }
 
     @Test
-    void testHandleGenericException() {
-        // Given
-        Exception exception = new Exception("Generic error");
+    void testHandleRuntimeException_ExcludesEntityNotFound() {
+        // Given - EntityNotFoundException should be re-thrown
+        JooqExceptionHandler.EntityNotFoundException exception =
+            new JooqExceptionHandler.EntityNotFoundException("Test entity not found");
 
-        // When
-        ResponseEntity<AsyncErrorResponse> response = exceptionHandler.handleGenericException(exception);
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals("INTERNAL_ERROR", response.getBody().getErrorCode());
-        assertEquals("An unexpected error occurred", response.getBody().getErrorMessage());
-        assertNotNull(response.getBody().getTimestamp());
+        // When & Then - should be re-thrown, not handled
+        assertThrows(JooqExceptionHandler.EntityNotFoundException.class, () -> {
+            exceptionHandler.handleRuntimeException(exception);
+        });
     }
 }
