@@ -6,3 +6,10 @@ target
 .vscode
 .claude
 .kiro
+
+# Eclipse
+.classpath
+.factorypath
+.project
+.settings/
+nul
