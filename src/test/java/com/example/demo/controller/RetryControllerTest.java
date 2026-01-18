@@ -1,7 +1,7 @@
 package com.example.demo.controller;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
@@ -18,7 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
  * 验证重试相关的HTTP接口功能
  */
 @SpringBootTest
-@AutoConfigureWebMvc
+@AutoConfigureMockMvc
 @TestPropertySource(properties = {
     "logging.level.com.example.demo=DEBUG"
 })
@@ -33,7 +33,7 @@ class RetryControllerTest {
                 .param("shouldSucceed", "true"))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().string(Matchers.containsString("成功")));
+                .andExpect(content().string(Matchers.containsString("Basic retry succeeded")));
     }
 
     @Test
@@ -42,7 +42,7 @@ class RetryControllerTest {
                 .param("shouldSucceed", "false"))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().string(Matchers.containsString("恢复")));
+                .andExpect(content().string(Matchers.containsString("Recovery")));
     }
 
     @Test
@@ -51,7 +51,7 @@ class RetryControllerTest {
                 .param("shouldSucceed", "true"))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().string(Matchers.containsString("本地服务")));
+                .andExpect(content().string(Matchers.containsString("Local service call succeeded")));
     }
 
     @Test
@@ -60,7 +60,7 @@ class RetryControllerTest {
                 .param("shouldSucceed", "true"))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().string(Matchers.containsString("远程服务")));
+                .andExpect(content().string(Matchers.containsString("Remote service call succeeded")));
     }
 
     @Test
@@ -94,7 +94,7 @@ class RetryControllerTest {
                 .param("shouldSucceed", "true"))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().string(Matchers.containsString("编程式重试")));
+                .andExpect(content().string(Matchers.containsString("Imperative retry succeeded")));
     }
 
     @Test
