@@ -1,14 +1,15 @@
 package com.example.demo.service.jooq;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dto.jooq.JooqCreateProductRequest;
 import com.example.demo.dto.jooq.JooqProductDto;
 import com.example.demo.exception.JooqExceptionHandler.EntityNotFoundException;
+import com.example.demo.mapper.JooqProductMapper;
 import com.example.demo.repository.jooq.JooqProductRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 public class JooqProductService {
 
     private final JooqProductRepository productRepository;
+    private final JooqProductMapper productMapper;
 
     /**
      * 创建商品
@@ -34,13 +36,7 @@ public class JooqProductService {
      */
     public Long createProduct(JooqCreateProductRequest request) {
         log.debug("Creating product: {}", request.getName());
-        JooqProductDto product = JooqProductDto.builder()
-            .name(request.getName())
-            .description(request.getDescription())
-            .price(request.getPrice())
-            .stock(request.getStock())
-            .category(request.getCategory())
-            .build();
+        JooqProductDto product = productMapper.toProductDto(request);
         Long id = productRepository.insert(product);
         log.info("Product created successfully with id: {}", id);
         return id;
@@ -77,30 +73,17 @@ public class JooqProductService {
 
         log.info("Batch creating {} products", requests.size());
         List<JooqProductDto> products = requests.stream()
-            .map(r -> JooqProductDto.builder()
-                .name(r.getName())
-                .description(r.getDescription())
-                .price(r.getPrice())
-                .stock(r.getStock())
-                .category(r.getCategory())
-                .build())
+            .map(productMapper::toProductDto)
             .toList();
 
         int[] results = productRepository.batchInsert(products);
 
-        // 验证结果
-        int successCount = 0;
-        int failureCount = 0;
-        List<Integer> failedIndexes = new ArrayList<>();
-
-        for (int i = 0; i < results.length; i++) {
-            if (results[i] > 0) {
-                successCount++;
-            } else {
-                failureCount++;
-                failedIndexes.add(i);
-            }
-        }
+        int successCount = (int) IntStream.of(results).filter(r -> r > 0).count();
+        int failureCount = results.length - successCount;
+        List<Integer> failedIndexes = IntStream.range(0, results.length)
+            .filter(i -> results[i] <= 0)
+            .boxed()
+            .toList();
 
         if (failureCount > 0) {
             log.error("Batch insert partially failed: {} succeeded, {} failed. Failed indexes: {}",

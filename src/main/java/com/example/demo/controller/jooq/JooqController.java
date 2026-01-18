@@ -1,6 +1,5 @@
 package com.example.demo.controller.jooq;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
