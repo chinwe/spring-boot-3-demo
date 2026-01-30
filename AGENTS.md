@@ -8,7 +8,7 @@
 
 ## 概述
 
-Spring Boot 3.5.9 + Java 21 演示项目，展示现代 Java Web 应用架构。包含四大功能模块：异步处理、Spring Retry、JOOQ 电商系统、对象映射（MapStruct + Orika）。
+Spring Boot 3.5.9 + Java 25 演示项目，展示现代 Java Web 应用架构。包含四大功能模块：异步处理、Spring Retry、JOOQ 电商系统、对象映射（MapStruct + Orika）。
 
 ---
 
@@ -211,7 +211,7 @@ mvn clean install -DskipTests
 ## 技术栈
 
 - Spring Boot 3.5.9
-- Java 21
+- Java 25
 - Maven
 - JOOQ 3.19.15
 - H2 Database

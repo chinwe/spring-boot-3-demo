@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目信息
 
-这是一个基于 **Spring Boot 3.5.9** 和 **Java 21** 的演示项目，展示了现代 Spring Boot 应用的各种特性和最佳实践。
+这是一个基于 **Spring Boot 3.5.9** 和 **Java 25** 的演示项目，展示了现代 Spring Boot 应用的各种特性和最佳实践。
 
 ## 常用命令
 
@@ -213,8 +213,8 @@ com.example.demo/
 <testcontainers.version>1.20.4</testcontainers.version>
 ```
 
-### Java 21 特性
-- 项目使用 Java 21，可以使用最新的 Java 特性（如虚拟线程、模式匹配等）
+### Java 25 特性
+- 项目使用 Java 25，可以使用最新的 Java 特性（如虚拟线程、模式匹配等）
 
 ### MapStruct + Lombok 集成
 ```xml
