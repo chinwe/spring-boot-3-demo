@@ -35,6 +35,16 @@ mvn test -Dtest=OrderMapperTest
 mvn test -Dtest=JooqIntegrationTest
 mvn test -Dtest=OrikaMappingServiceTest
 
+# 虚拟线程模块测试
+mvn test -Dtest=VirtualThreadServiceTest
+mvn test -Dtest=PinDetectionServiceTest
+mvn test -Dtest=ScopeValueServiceTest
+mvn test -Dtest=StructuredConcurrencyServiceTest
+mvn test -Dtest=VirtualThreadMetricsServiceTest
+mvn test -Dtest=VirtualThreadControllerTest
+mvn test -Dtest=VirtualThreadIntegrationTest
+mvn test -Dtest=VirtualThreadPerformanceTest
+
 # 运行特定包下的测试
 mvn test -Dtest=com.example.demo.controller.*
 mvn test -Dtest=com.example.demo.service.jooq.*
@@ -142,10 +152,45 @@ com.example.demo/
 │   ├── NetworkException.java          # 网络异常（适合重试）
 │   ├── BusinessException.java         # 业务异常（不可重试）
 │   ├── AsyncExceptionHandler.java      # 异步异常处理器
-│   └── JooqExceptionHandler.java      # JOOQ 异常处理器
+│   ├── JooqExceptionHandler.java      # JOOQ 异常处理器
+│   └── virtual/                       # 虚拟线程异常
+│       ├── PinDetectedException.java  # Pin 检测异常
+│       └── VirtualThreadException.java # 虚拟线程异常
 │
 └── listener/                          # 监听器
     └── CustomRetryListener.java        # 自定义重试监听器
+```
+
+### 虚拟线程模块结构
+
+```
+com.example.demo.virtual/
+├── configuration/                      # 虚拟线程配置
+│   ├── VirtualThreadConfiguration.java     # 虚拟线程执行器配置
+│   └── PinDetectionConfiguration.java      # Pin 检测配置（JFR）
+│
+├── context/                            # 上下文
+│   └── UserContext.java                  # ScopedValue 用户上下文
+│
+├── controller/                         # 虚拟线程控制器
+│   └── VirtualThreadController.java      # 虚拟线程 API 接口
+│
+├── dto/                                # 数据传输对象
+│   ├── VirtualThreadTaskDto.java         # 虚拟线程任务 DTO
+│   ├── PinDetectionReport.java           # Pin 检测报告
+│   ├── PerformanceComparisonReport.java  # 性能对比报告
+│   └── StructuredConcurrencyResult.java  # 结构化并发结果
+│
+├── service/                            # 服务层
+│   ├── VirtualThreadService.java         # 虚拟线程基础服务
+│   ├── PinDetectionService.java          # Pin 检测服务
+│   ├── ScopeValueService.java            # ScopedValue 演示服务
+│   ├── StructuredConcurrencyService.java # 结构化并发服务
+│   └── VirtualThreadMetricsService.java  # 虚拟线程指标服务
+│
+└── vo/                                 # 值对象
+    ├── VirtualThreadTaskVo.java          # 虚拟线程任务 VO
+    └── PinDetectionVo.java               # Pin 检测 VO
 ```
 
 ### 核心功能模块
@@ -191,6 +236,19 @@ com.example.demo/
   - `j_orders`: 订单表
   - `j_order_items`: 订单项表
 
+#### 5. 虚拟线程模块（Java 25）
+- **位置**: `virtual/` 包
+- **功能**: 展示 Java 25 虚拟线程、Pin 检测、ScopedValue 和结构化并发
+- **特点**:
+  - **虚拟线程**: 使用 `Executors.newVirtualThreadPerTaskExecutor()` 创建轻量级线程
+  - **Pin 检测**: 检测虚拟线程被固定到载体线程的场景（synchronized、本地方法、文件 I/O）
+  - **ScopedValue**: 不可变的线程上下文传递机制，自动清理
+  - **结构化并发**: 使用 CompletableFuture 演示结构化并发模式
+- **配置**:
+  - JFR 录制用于 Pin 检测（通过 `-Djfr.enabled=true` 启用）
+  - 虚拟线程执行器 Bean 配置
+  - 需要启用预览功能：`--enable-preview`
+
 ## 技术栈要点
 
 ### 核心依赖
@@ -214,7 +272,39 @@ com.example.demo/
 ```
 
 ### Java 25 特性
-- 项目使用 Java 25，可以使用最新的 Java 特性（如虚拟线程、模式匹配等）
+- 项目使用 Java 25，可以使用最新的 Java 特性
+
+**虚拟线程相关 API**:
+```java
+// 创建虚拟线程
+Thread vThread = Thread.ofVirtual().start(() -> { /* 任务代码 */ });
+
+// 使用执行器
+ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+
+// 判断是否为虚拟线程
+boolean isVirtual = Thread.currentThread().isVirtual();
+
+// ScopedValue 使用
+ScopedValue.where(CONTEXT, "value").call(() -> {
+    String value = CONTEXT.get();
+    return value;
+});
+
+// StructuredTaskScope 使用
+try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+    Future<String> f1 = scope.fork(() -> task1());
+    Future<String> f2 = scope.fork(() -> task2());
+    scope.join();
+    return f1.resultNow() + f2.resultNow();
+}
+```
+
+**启动应用时可选的 JVM 参数**:
+```bash
+# 启用 JFR Pin 检测
+java -XX:StartFlightRecording=filename=recording.jfr,duration=60s -Djfr.enabled=true -jar demo.jar
+```
 
 ### MapStruct + Lombok 集成
 ```xml
@@ -316,6 +406,40 @@ com.example.demo/
 | GET | `/test/hello` | 基础测试接口 |
 | GET | `/test/echo/{message}` | 回显消息 |
 
+#### 虚拟线程接口 (`/api/virtual`)
+
+**基础虚拟线程**:
+| 方法 | 路径 | 描述 |
+|------|------|------|
+| GET | `/api/virtual/basic-task` | 执行基础虚拟线程任务 |
+| GET | `/api/virtual/batch-tasks` | 批量执行虚拟线程任务 |
+| GET | `/api/virtual/simulate-pinning` | 模拟 Pin 场景（synchronized） |
+
+**Pin 检测**:
+| 方法 | 路径 | 描述 |
+|------|------|------|
+| GET | `/api/virtual/pin-detection` | 检测 Pin 线程事件 |
+| POST | `/api/virtual/pin-test` | 测试 Pin 场景（SYNCHRONIZED/NATIVE/FILE_IO） |
+
+**ScopedValue**:
+| 方法 | 路径 | 描述 |
+|------|------|------|
+| GET | `/api/virtual/scoped-value` | 演示 ScopedValue 用法 |
+| GET | `/api/virtual/scoped-value-comparison` | 对比 ThreadLocal 与 ScopedValue |
+
+**结构化并发**:
+| 方法 | 路径 | 描述 |
+|------|------|------|
+| POST | `/api/virtual/structured-concurrency` | 执行结构化并发任务 |
+| GET | `/api/virtual/structured-concurrency/shutdown-on-success` | 演示 ShutdownOnSuccess 模式 |
+| GET | `/api/virtual/structured-concurrency/error-handling` | 演示错误处理 |
+
+**性能测试**:
+| 方法 | 路径 | 描述 |
+|------|------|------|
+| GET | `/api/virtual/performance-comparison` | 性能对比（传统线程池 vs 虚拟线程） |
+| GET | `/api/virtual/demo-all` | 综合演示所有功能 |
+
 ## 数据库设计
 
 ### JOOQ 电商表结构
@@ -404,6 +528,18 @@ CREATE TABLE j_order_items (
 ### 性能测试
 - 异步性能测试 (`AsyncPerformanceTest`)
 - 对象映射性能对比测试
+- 虚拟线程性能测试 (`VirtualThreadPerformanceTest`)
+  - 对比传统线程池和虚拟线程在不同规模任务下的性能
+  - 测试吞吐量、内存使用、延迟等指标
+
+### 虚拟线程测试
+- **VirtualThreadServiceTest**: 测试虚拟线程基础功能
+- **PinDetectionServiceTest**: 测试 Pin 检测功能
+- **ScopeValueServiceTest**: 测试 ScopedValue 上下文传递
+- **StructuredConcurrencyServiceTest**: 测试结构化并发
+- **VirtualThreadMetricsServiceTest**: 测试性能指标收集
+- **VirtualThreadIntegrationTest**: 端到端集成测试
+- **VirtualThreadPerformanceTest**: 性能对比测试
 
 ## 测试文件结构
 
@@ -432,4 +568,15 @@ src/test/java/com/example/demo/
 │   └── OrderMapperTest.java           # 订单映射器测试
 └── exception/
     └── AsyncExceptionHandlerTest.java # 异常处理器测试
+├── virtual/                            # 虚拟线程测试
+│   ├── VirtualThreadIntegrationTest.java  # 虚拟线程集成测试
+│   ├── VirtualThreadPerformanceTest.java  # 虚拟线程性能测试
+│   ├── controller/
+│   │   └── VirtualThreadControllerTest.java # 虚拟线程控制器测试
+│   └── service/
+│       ├── VirtualThreadServiceTest.java    # 虚拟线程服务测试
+│       ├── PinDetectionServiceTest.java     # Pin 检测服务测试
+│       ├── ScopeValueServiceTest.java       # ScopeValue 服务测试
+│       ├── StructuredConcurrencyServiceTest.java # 结构化并发服务测试
+│       └── VirtualThreadMetricsServiceTest.java  # 虚拟线程指标服务测试
 ```
