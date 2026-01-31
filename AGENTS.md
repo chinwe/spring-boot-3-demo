@@ -1,14 +1,14 @@
 # Spring Boot 3 Demo 项目知识库
 
-**生成时间**: 2026-01-18
-**提交哈希**: N/A
-**分支**: N/A
+**生成时间**: 2026-01-31
+**提交哈希**: b64cf0a7f36d08f8fc865fa2bbfa1c0fa61b8a22
+**分支**: main
 
 ---
 
 ## 概述
 
-Spring Boot 3.5.9 + Java 25 演示项目，展示现代 Java Web 应用架构。包含四大功能模块：异步处理、Spring Retry、JOOQ 电商系统、对象映射（MapStruct + Orika）。
+Spring Boot 3.5.9 + Java 25 演示项目，展示现代 Java Web 应用架构。包含五大功能模块：异步处理、Spring Retry、JOOQ 电商系统、对象映射（MapStruct）、虚拟线程。
 
 ---
 
@@ -33,8 +33,15 @@ spring-boot-3-demo/
 │   ├── exception/         # 全局异常处理
 │   ├── configuration/     # 配置类
 │   ├── annotation/        # 自定义注解
-│   └── listener/         # 事件监听器
-├── src/test/java/         # 测试代码（17 个文件）
+│   ├── listener/         # 事件监听器
+│   └── virtual/          # 虚拟线程模块
+│       ├── controller/   # 虚拟线程控制器
+│       ├── service/      # 虚拟线程服务
+│       ├── dto/          # 虚拟线程 DTO
+│       ├── vo/           # 虚拟线程 VO
+│       ├── exception/    # 虚拟线程异常
+│       └── configuration/# 虚拟线程配置
+├── src/test/java/         # 测试代码（30 个文件）
 └── AGENTS.md              # 本文件
 ```
 
@@ -50,6 +57,7 @@ spring-boot-3-demo/
 | MapStruct 映射 | `mapper/OrderMapper` | 高级映射示例 |
 | 异常处理 | `exception/*ExceptionHandler` | 全局异常处理器 |
 | 自定义注解 | `annotation/` | @LocalRetryable, @RemoteRetryable |
+| 虚拟线程 | `virtual/` | 虚拟线程演示功能 |
 
 ---
 
@@ -218,8 +226,8 @@ mvn clean install -DskipTests
 - Redis（已配置）
 - Lombok 1.18.42
 - MapStruct 1.6.3
-- Orika 1.5.4
 - Spring Retry
 - SpringDoc OpenAPI 2.8.0
 - Testcontainers 1.20.4
 - JUnit 5.11.4
+- 虚拟线程（Java 21+）
