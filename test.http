@@ -305,3 +305,337 @@ GET {{host}}/retry/conditional?exceptionType=
 ###
 ### 36. 测试空优先级
 GET {{host}}/retry/spel?priority=
+
+###
+
+### =================
+### Orika 对象映射接口
+### =================
+
+### 37. 基础对象映射
+GET {{host}}/orika/user
+
+###
+
+### 38. 复杂对象映射
+GET {{host}}/orika/order
+
+###
+
+### 39. 集合映射（默认3个订单）
+GET {{host}}/orika/orders
+
+###
+
+### 40. 集合映射（自定义数量）
+GET {{host}}/orika/orders?count=5
+
+###
+
+### 41. 批量映射
+POST {{host}}/orika/batch
+Content-Type: application/json
+
+[
+    {
+        "id": 1,
+        "orderNumber": "ORD-2025-001",
+        "totalAmount": 2999.99,
+        "status": "PROCESSING",
+        "customer": {
+            "id": 1,
+            "firstName": "张",
+            "lastName": "三",
+            "email": "zhangsan@example.com"
+        }
+    },
+    {
+        "id": 2,
+        "orderNumber": "ORD-2025-002",
+        "totalAmount": 1599.99,
+        "status": "PENDING",
+        "customer": {
+            "id": 2,
+            "firstName": "李",
+            "lastName": "四",
+            "email": "lisi@example.com"
+        }
+    }
+]
+
+###
+
+### =================
+### JOOQ 电商系统接口
+### =================
+
+### =================
+### 用户管理接口
+### =================
+
+### 42. 创建用户
+POST {{host}}/api/jooq/users
+Content-Type: application/json
+
+{
+    "username": "testuser",
+    "email": "testuser@example.com",
+    "phone": "13800138000"
+}
+
+###
+
+### 43. 查询用户
+GET {{host}}/api/jooq/users/1
+
+###
+
+### 44. 查询所有用户
+GET {{host}}/api/jooq/users
+
+###
+
+### 45. 根据用户名查询
+GET {{host}}/api/jooq/users/username/testuser
+
+###
+
+### =================
+### 商品管理接口
+### =================
+
+### 46. 创建商品
+POST {{host}}/api/jooq/products
+Content-Type: application/json
+
+{
+    "name": "笔记本电脑",
+    "description": "高性能游戏本",
+    "price": 5999.99,
+    "stock": 100,
+    "category": "电子产品"
+}
+
+###
+
+### 47. 批量创建商品
+POST {{host}}/api/jooq/products/batch
+Content-Type: application/json
+
+[
+    {
+        "name": "无线鼠标",
+        "description": "人体工学设计",
+        "price": 99.99,
+        "stock": 500,
+        "category": "电子产品"
+    },
+    {
+        "name": "机械键盘",
+        "description": "青轴背光",
+        "price": 299.99,
+        "stock": 300,
+        "category": "电子产品"
+    },
+    {
+        "name": "显示器",
+        "description": "27寸4K显示器",
+        "price": 1999.99,
+        "stock": 50,
+        "category": "电子产品"
+    }
+]
+
+###
+
+### 48. 查询商品
+GET {{host}}/api/jooq/products/1
+
+###
+
+### 49. 按分类查询商品（默认分页）
+GET {{host}}/api/jooq/products?category=电子产品
+
+###
+
+### 50. 按分类查询商品（自定义分页）
+GET {{host}}/api/jooq/products?category=电子产品&page=0&size=5
+
+###
+
+### 51. 查询低库存商品
+GET {{host}}/api/jooq/products/low-stock?threshold=50
+
+###
+
+### 52. 查询分类库存统计
+GET {{host}}/api/jooq/products/stock/电子产品
+
+###
+
+### =================
+### 订单管理接口
+### =================
+
+### 53. 创建订单（需要先创建用户和商品）
+POST {{host}}/api/jooq/orders
+Content-Type: application/json
+
+{
+    "userId": 1,
+    "orderNumber": "ORD-2025-001",
+    "items": [
+        {
+            "productId": 1,
+            "quantity": 1
+        },
+        {
+            "productId": 2,
+            "quantity": 2
+        }
+    ],
+    "remarks": "请尽快发货"
+}
+
+###
+
+### 54. 查询订单详情
+GET {{host}}/api/jooq/orders/1
+
+###
+
+### 55. 查询用户订单
+GET {{host}}/api/jooq/users/1/orders
+
+###
+
+### 56. 订单统计
+GET {{host}}/api/jooq/orders/statistics
+
+###
+
+### =================
+### Java 25 虚拟线程接口
+### =================
+
+### =================
+### 基础虚拟线程
+### =================
+
+### 57. 执行基础虚拟线程任务
+GET {{host}}/api/virtual/basic-task
+
+###
+
+### 58. 执行基础虚拟线程任务（自定义参数）
+GET {{host}}/api/virtual/basic-task?taskName=MyTask&delayMillis=500
+
+###
+
+### 59. 批量执行虚拟线程任务
+GET {{host}}/api/virtual/batch-tasks
+
+###
+
+### 60. 批量执行虚拟线程任务（自定义参数）
+GET {{host}}/api/virtual/batch-tasks?taskCount=500&delayMillis=100
+
+###
+
+### 61. 模拟 Pin 场景
+GET {{host}}/api/virtual/simulate-pinning
+
+###
+
+### =================
+### Pin 检测
+### =================
+
+### 62. 检测 Pin 线程事件
+GET {{host}}/api/virtual/pin-detection
+
+###
+
+### 63. 测试 Pin 场景 - SYNCHRONIZED
+POST {{host}}/api/virtual/pin-test?pinType=SYNCHRONIZED
+
+###
+
+### 64. 测试 Pin 场景 - NATIVE
+POST {{host}}/api/virtual/pin-test?pinType=NATIVE
+
+###
+
+### 65. 测试 Pin 场景 - FILE_IO
+POST {{host}}/api/virtual/pin-test?pinType=FILE_IO
+
+###
+
+### =================
+### ScopedValue
+### =================
+
+### 66. 演示 ScopedValue
+GET {{host}}/api/virtual/scoped-value
+
+###
+
+### 67. 对比 ThreadLocal 与 ScopedValue
+GET {{host}}/api/virtual/scoped-value-comparison
+
+###
+
+### =================
+### 结构化并发
+### =================
+
+### 68. 执行结构化并发任务 - JOIN_ALL
+POST {{host}}/api/virtual/structured-concurrency?strategy=JOIN_ALL
+
+###
+
+### 69. 执行结构化并发任务 - SHUTDOWN_ON_SUCCESS
+POST {{host}}/api/virtual/structured-concurrency?strategy=SHUTDOWN_ON_SUCCESS
+
+###
+
+### 70. 执行结构化并发任务 - ERROR_HANDLING
+POST {{host}}/api/virtual/structured-concurrency?strategy=ERROR_HANDLING
+
+###
+
+### 71. 演示 ShutdownOnSuccess
+GET {{host}}/api/virtual/structured-concurrency/shutdown-on-success
+
+###
+
+### 72. 演示错误处理
+GET {{host}}/api/virtual/structured-concurrency/error-handling
+
+###
+
+### =================
+### 性能测试
+### =================
+
+### 73. 性能对比测试（默认参数）
+GET {{host}}/api/virtual/performance-comparison
+
+###
+
+### 74. 性能对比测试（小规模）
+GET {{host}}/api/virtual/performance-comparison?taskCount=100&delayMillis=10
+
+###
+
+### 75. 性能对比测试（大规模）
+GET {{host}}/api/virtual/performance-comparison?taskCount=10000&delayMillis=5
+
+###
+
+### =================
+### 综合演示
+### =================
+
+### 76. 综合演示所有功能
+GET {{host}}/api/virtual/demo-all
