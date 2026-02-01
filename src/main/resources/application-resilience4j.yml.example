@@ -1,0 +1,426 @@
+# ==========================================
+# Resilience4j 完整配置示例
+# 复制此文件内容到 application.yml 或 application-resilience4j.yml
+# ==========================================
+
+resilience4j:
+  # ==========================================
+  # 熔断器配置 (Circuit Breaker)
+  # ==========================================
+  circuitbreaker:
+    # 共享配置模板
+    configs:
+      # 默认配置
+      default:
+        sliding-window-size: 100
+        minimum-number-of-calls: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+        slow-call-rate-threshold: 50
+        slow-call-duration-threshold: 3s
+        sliding-window-type: COUNT_BASED
+        # 忽略的异常（不触发熔断）
+        ignore-exceptions:
+          - java.lang.IllegalArgumentException
+          - java.lang.IllegalStateException
+        # 记录的异常（触发熔断）
+        record-exceptions:
+          - java.lang.RuntimeException
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+        # 记录失败（即使没有异常）
+        record-failure-predicate: com.example.demo.utils.RecordFailurePredicate
+
+      # 宽松配置（核心服务使用）
+      relaxed:
+        sliding-window-size: 200
+        minimum-number-of-calls: 20
+        failure-rate-threshold: 60
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 5
+        slow-call-rate-threshold: 60
+        slow-call-duration-threshold: 5s
+
+      # 严格配置（非关键服务使用）
+      strict:
+        sliding-window-size: 50
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 30
+        wait-duration-in-open-state: 60s
+        permitted-number-of-calls-in-half-open-state: 2
+        slow-call-rate-threshold: 30
+        slow-call-duration-threshold: 2s
+
+      # 时间窗口配置
+      time-based:
+        sliding-window-type: TIME_BASED
+        sliding-window-size: 60s
+        minimum-number-of-calls: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+
+    # 具体实例配置
+    instances:
+      # 用户服务（默认配置）
+      userService:
+        base-config: default
+        register-health-indicator: true
+        allow-automatic-transition-from-open-to-half-open: true
+
+      # 订单服务（宽松配置 + 自定义）
+      orderService:
+        base-config: relaxed
+        wait-duration-in-open-state: 20s
+        register-health-indicator: true
+
+      # 支付服务（完全自定义）
+      paymentService:
+        sliding-window-size: 150
+        sliding-window-type: TIME_BASED
+        minimum-number-of-calls: 15
+        failure-rate-threshold: 40
+        wait-duration-in-open-state: 15s
+        permitted-number-of-calls-in-half-open-state: 4
+        automatic-transition-from-open-to-half-open-enabled: true
+        slow-call-rate-threshold: 40
+        slow-call-duration-threshold: 2s
+        register-health-indicator: true
+
+      # 库存服务（严格配置）
+      inventoryService:
+        base-config: strict
+        register-health-indicator: true
+
+      # 外部API（默认配置）
+      externalApi:
+        base-config: default
+        register-health-indicator: true
+
+      # 组合熔断器
+      combinedCircuitBreaker:
+        base-config: default
+        register-health-indicator: true
+
+  # ==========================================
+  # 限流器配置 (Rate Limiter)
+  # ==========================================
+  ratelimiter:
+    configs:
+      # 默认配置
+      default:
+        limit-for-period: 10
+        limit-refresh-period: 1s
+        timeout-duration: 5s
+
+      # 高流量配置
+      high-traffic:
+        limit-for-period: 1000
+        limit-refresh-period: 1s
+        timeout-duration: 10s
+
+      # 中等流量配置
+      medium-traffic:
+        limit-for-period: 100
+        limit-refresh-period: 1s
+        timeout-duration: 5s
+
+      # 低流量配置
+      low-traffic:
+        limit-for-period: 20
+        limit-refresh-period: 1s
+        timeout-duration: 3s
+
+      # 移动端配置
+      mobile-limiter:
+        limit-for-period: 100
+        limit-refresh-period: 1s
+        timeout-duration: 5s
+
+      # Web端配置
+      web-limiter:
+        limit-for-period: 50
+        limit-refresh-period: 1s
+        timeout-duration: 5s
+
+    instances:
+      # 移动端API限流
+      mobile:
+        base-config: mobile-limiter
+        register-health-indicator: true
+
+      # Web端API限流
+      web:
+        base-config: web-limiter
+        register-health-indicator: true
+
+      # Admin端限流
+      admin:
+        base-config: high-traffic
+        register-health-indicator: true
+
+      # API限流（默认配置）
+      api:
+        base-config: default
+        register-health-indicator: true
+
+      # 订单创建限流
+      orderCreation:
+        limit-for-period: 50
+        limit-refresh-period: 1s
+        timeout-duration: 5s
+        register-health-indicator: true
+
+      # 支付限流
+      payment:
+        limit-for-period: 20
+        limit-refresh-period: 1s
+        timeout-duration: 10s
+        register-health-indicator: true
+
+      # 组合限流器
+      combinedRateLimiter:
+        base-config: default
+        register-health-indicator: true
+
+  # ==========================================
+  # 舱壁隔离配置 (Bulkhead)
+  # ==========================================
+  bulkhead:
+    configs:
+      # 默认配置
+      default:
+        max-concurrent-calls: 10
+        max-wait-duration: 5s
+
+      # 数据库配置
+      db-config:
+        max-concurrent-calls: 20
+        max-wait-duration: 10s
+
+      # 外部服务配置
+      external-config:
+        max-concurrent-calls: 5
+        max-wait-duration: 3s
+
+      # 高并发配置
+      high-concurrency:
+        max-concurrent-calls: 50
+        max-wait-duration: 10s
+
+    instances:
+      # 数据库访问舱壁
+      database:
+        base-config: db-config
+        register-health-indicator: true
+        writable-stack-trace-enabled: true
+
+      # 外部服务舱壁
+      externalService:
+        base-config: external-config
+        register-health-indicator: true
+
+      # 文件I/O舱壁
+      fileIO:
+        max-concurrent-calls: 3
+        max-wait-duration: 5s
+        register-health-indicator: true
+
+      # 组合舱壁
+      combinedBulkhead:
+        base-config: default
+        register-health-indicator: true
+
+  # ==========================================
+  # 超时控制配置 (Time Limiter)
+  # ==========================================
+  timelimiter:
+    configs:
+      # 默认配置
+      default:
+        timeout-duration: 5s
+        cancel-running-future: true
+
+      # 快速超时配置
+      fast:
+        timeout-duration: 1s
+        cancel-running-future: true
+
+      # 中等超时配置
+      medium:
+        timeout-duration: 3s
+        cancel-running-future: true
+
+      # 慢速超时配置
+      slow:
+        timeout-duration: 30s
+        cancel-running-future: false
+
+      # 极慢超时配置
+      very-slow:
+        timeout-duration: 60s
+        cancel-running-future: false
+
+    instances:
+      # API调用超时
+      apiCall:
+        base-config: fast
+        register-health-indicator: true
+
+      # 数据库查询超时
+      dbQuery:
+        base-config: medium
+        register-health-indicator: true
+
+      # 报表生成超时
+      reportGeneration:
+        base-config: very-slow
+        register-health-indicator: true
+
+      # 文件处理超时
+      fileProcessing:
+        base-config: slow
+        register-health-indicator: true
+
+      # 组合超时控制
+      apiTimeLimiter:
+        base-config: default
+        register-health-indicator: true
+
+  # ==========================================
+  # 重试配置 (Retry)
+  # ==========================================
+  retry:
+    configs:
+      # 默认配置
+      default:
+        max-attempts: 3
+        wait-duration: 1s
+        retry-exceptions:
+          - java.lang.RuntimeException
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+        ignore-exceptions:
+          - java.lang.IllegalArgumentException
+          - java.lang.NullPointerException
+
+      # 积极重试配置
+      aggressive:
+        max-attempts: 5
+        wait-duration: 500ms
+        exponential-backoff-multiplier: 2
+        max-wait-duration: 10s
+        retry-exceptions:
+          - java.lang.RuntimeException
+          - java.io.IOException
+
+      # 保守重试配置
+      conservative:
+        max-attempts: 2
+        wait-duration: 2s
+        retry-exceptions:
+          - java.io.IOException
+
+      # 指数退避配置
+      exponential-backoff:
+        max-attempts: 5
+        wait-duration: 500ms
+        exponential-backoff-multiplier: 2
+        randomization-factor: 0.5
+        max-wait-duration: 10s
+
+    instances:
+      # 外部API重试
+      externalApiRetry:
+        base-config: default
+        register-health-indicator: true
+
+      # 数据库重试（积极策略）
+      databaseRetry:
+        base-config: aggressive
+        register-health-indicator: true
+
+      # 消息队列重试（指数退避）
+      messageQueueRetry:
+        base-config: exponential-backoff
+        register-health-indicator: true
+
+      # 文件操作重试（保守策略）
+      fileOperationRetry:
+        base-config: conservative
+        register-health-indicator: true
+
+  # ==========================================
+  # 全局配置
+  # ==========================================
+  # 读写超时配置
+  time-limiter:
+    writable-stack-trace-enabled: true
+    event-consumer-buffer-size: 100
+
+  # 指标配置
+  metrics:
+    enabled: true
+    legacy:
+      enabled: true  # 启用旧版指标名称
+    export:
+      prometheus:
+        enabled: true
+      cloudwatch:
+        enabled: false
+      influx:
+        enabled: false
+      statsd:
+        enabled: false
+
+  # 事件配置
+  circuitbreaker:
+    event-consumer-buffer-size: 100
+    register-health-indicator: true
+    health-indicator:
+      # 健康检查配置
+      enabled: true
+
+# ==========================================
+# Spring Boot Actuator 配置
+# ==========================================
+management:
+  endpoints:
+    web:
+      exposure:
+        # 暴露的端点
+        include: health,info,metrics,circuitbreakers,ratelimiters,bulkheads,retries
+        # 排除的端点
+        exclude: env,configprops,beans
+  endpoint:
+    health:
+      # 健康检查详情
+      show-details: always
+      show-components: always
+      # 熔断器健康检查
+      circuit-breakers:
+        enabled: true
+      # 限流器健康检查
+      ratelimiters:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        resilience4j.circuitbreaker: true
+        resilience4j.ratelimiter: true
+        resilience4j.bulkhead: true
+        resilience4j.timelimiter: true
+      percentiles:
+        resilience4j.circuitbreaker: 0.5, 0.95, 0.99
+        resilience4j.ratelimiter: 0.5, 0.95, 0.99
+        resilience4j.bulkhead: 0.5, 0.95, 0.99
+        resilience4j.timelimiter: 0.5, 0.95, 0.99
+      sla:
+        resilience4j.circuitbreaker: 100ms, 500ms, 1s
+        resilience4j.ratelimiter: 100ms, 500ms, 1s

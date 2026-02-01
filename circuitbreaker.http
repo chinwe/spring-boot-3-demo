@@ -1,0 +1,542 @@
+# =================
+# Spring Cloud Circuit Breaker (Resilience4j) 接口测试
+# =================
+
+# 变量
+@host = http://localhost:8080
+
+### =================
+# 熔断器相关接口
+### =================
+
+### 1. 熔断器示例 - 成功场景
+POST {{host}}/api/circuitbreaker/circuit-breaker
+Content-Type: application/json
+
+{
+    "endpoint": "/api/users",
+    "simulateFailure": false
+}
+
+###
+
+### 2. 熔断器示例 - 失败场景（多次调用可触发熔断器打开）
+POST {{host}}/api/circuitbreaker/circuit-breaker
+Content-Type: application/json
+
+{
+    "endpoint": "/api/users",
+    "simulateFailure": true,
+    "delayMs": 100
+}
+
+###
+
+### 3. 熔断器示例 - 带延迟
+POST {{host}}/api/circuitbreaker/circuit-breaker
+Content-Type: application/json
+
+{
+    "endpoint": "/api/orders",
+    "simulateFailure": false,
+    "delayMs": 500
+}
+
+###
+
+### 4. 获取指定熔断器状态
+GET {{host}}/api/circuitbreaker/state/externalApi
+
+###
+
+### 5. 获取指定熔断器状态
+GET {{host}}/api/circuitbreaker/state/combinedCircuitBreaker
+
+###
+
+### 6. 获取所有熔断器状态
+GET {{host}}/api/circuitbreaker/state/all
+
+###
+
+### 7. 重置指定熔断器
+POST {{host}}/api/circuitbreaker/reset/externalApi
+
+###
+
+### 8. 获取所有熔断器名称
+GET {{host}}/api/circuitbreaker/circuit-breakers
+
+###
+
+### =================
+# 限流器相关接口
+### =================
+
+### 9. 限流器示例
+POST {{host}}/api/circuitbreaker/rate-limiter?endpoint=/api/products
+
+###
+
+### =================
+# 舱壁隔离相关接口
+### =================
+
+### 10. 舱壁隔离示例
+POST {{host}}/api/circuitbreaker/bulkhead?endpoint=/api/orders
+
+###
+
+### =================
+# 超时控制相关接口
+### =================
+
+### 11. 超时控制示例 - 短延迟（成功）
+POST {{host}}/api/circuitbreaker/time-limiter?endpoint=/api/timeout&delayMs=1000
+
+###
+
+### 12. 超时控制示例 - 长延迟（超时）
+POST {{host}}/api/circuitbreaker/time-limiter?endpoint=/api/timeout&delayMs=6000
+
+###
+
+### =================
+# 组合容错模式接口
+### =================
+
+### 13. 组合所有容错模式 - 成功场景
+POST {{host}}/api/circuitbreaker/all-resilience
+Content-Type: application/json
+
+{
+    "endpoint": "/api/checkout",
+    "simulateFailure": false
+}
+
+###
+
+### 14. 组合所有容错模式 - 失败场景
+POST {{host}}/api/circuitbreaker/all-resilience
+Content-Type: application/json
+
+{
+    "endpoint": "/api/checkout",
+    "simulateFailure": true
+}
+
+###
+
+### =================
+# X-Caller 限流接口
+### =================
+
+### 15. X-Caller 基础限流（使用默认配置）
+GET {{host}}/api/circuitbreaker/rate-limit/basic?data=test-data
+
+###
+
+### 16. X-Caller 基础限流 - 使用 mobile 调用方
+GET {{host}}/api/circuitbreaker/rate-limit/basic?data=mobile-request
+X-Caller: mobile
+
+###
+
+### 17. X-Caller 基础限流 - 使用 web 调用方
+GET {{host}}/api/circuitbreaker/rate-limit/basic?data=web-request
+X-Caller: web
+
+###
+
+### 18. X-Caller 基础限流 - 使用 admin 调用方
+GET {{host}}/api/circuitbreaker/rate-limit/basic?data=admin-request
+X-Caller: admin
+
+###
+
+### 19. X-Caller 差异化限流 - mobile 客户端（100 请求/秒）
+GET {{host}}/api/circuitbreaker/rate-limit/caller-specific?operation=query-users
+X-Caller: mobile
+
+###
+
+### 20. X-Caller 差异化限流 - web 客户端（50 请求/秒）
+GET {{host}}/api/circuitbreaker/rate-limit/caller-specific?operation=query-products
+X-Caller: web
+
+###
+
+### 21. X-Caller 差异化限流 - admin 客户端（1000 请求/秒）
+GET {{host}}/api/circuitbreaker/rate-limit/caller-specific?operation=admin-operation
+X-Caller: admin
+
+###
+
+### 22. X-Caller 差异化限流 - 未指定调用方（使用默认 10 请求/秒）
+GET {{host}}/api/circuitbreaker/rate-limit/caller-specific?operation=test-operation
+
+###
+
+### 23. 参数限流 - premium 调用方（100 请求/秒）
+GET {{host}}/api/circuitbreaker/rate-limit/with-param?callerId=premium&operation=process-payment
+
+###
+
+### 24. 参数限流 - free 调用方（5 请求/秒）
+GET {{host}}/api/circuitbreaker/rate-limit/with-param?callerId=free&operation=query-data
+
+###
+
+### 25. 严格限流（3 请求/秒）
+GET {{host}}/api/circuitbreaker/rate-limit/strict?data=strict-test
+
+###
+
+### 26. 宽松限流（1000 请求/秒）
+GET {{host}}/api/circuitbreaker/rate-limit/relaxed?data=relaxed-test
+
+###
+
+### =================
+# 模拟失败接口
+### =================
+
+### 27. 模拟失败 - 成功场景
+GET {{host}}/api/circuitbreaker/simulate-failure?simulate=false
+
+###
+
+### 28. 模拟失败 - 失败场景
+GET {{host}}/api/circuitbreaker/simulate-failure?simulate=true
+
+###
+
+### =================
+# 监控和指标接口
+### =================
+
+### 29. 获取指标数据
+GET {{host}}/api/circuitbreaker/metrics?circuitBreakerName=externalApi
+
+###
+
+### 30. 获取指标数据（组合熔断器）
+GET {{host}}/api/circuitbreaker/metrics?circuitBreakerName=combinedCircuitBreaker
+
+###
+
+### 31. 重置指标
+POST {{host}}/api/circuitbreaker/metrics/reset
+
+###
+
+### =================
+# 配置查询接口
+### =================
+
+### 32. 获取默认限流配置
+GET {{host}}/api/circuitbreaker/config/default-rate-limit
+
+###
+
+### 33. 获取推荐限流配置 - mobile
+GET {{host}}/api/circuitbreaker/config/recommended/mobile
+
+###
+
+### 34. 获取推荐限流配置 - web
+GET {{host}}/api/circuitbreaker/config/recommended/web
+
+###
+
+### 35. 获取推荐限流配置 - admin
+GET {{host}}/api/circuitbreaker/config/recommended/admin
+
+###
+
+### 36. 获取推荐限流配置 - api
+GET {{host}}/api/circuitbreaker/config/recommended/api
+
+###
+
+### =================
+# 综合演示接口
+### =================
+
+### 37. 综合演示所有功能 - mobile 调用方
+GET {{host}}/api/circuitbreaker/demo-all
+X-Caller: mobile
+
+###
+
+### 38. 综合演示所有功能 - web 调用方
+GET {{host}}/api/circuitbreaker/demo-all
+X-Caller: web
+
+###
+
+### 39. 综合演示所有功能 - admin 调用方
+GET {{host}}/api/circuitbreaker/demo-all
+X-Caller: admin
+
+###
+
+### 40. 综合演示所有功能 - 未指定调用方
+GET {{host}}/api/circuitbreaker/demo-all
+
+###
+
+### =================
+# 压力测试场景
+### =================
+
+### 41. 快速连续调用测试 - 触发熔断器打开
+# 连续执行以下请求多次，观察熔断器状态变化
+
+### 第1次调用 - 正常
+POST {{host}}/api/circuitbreaker/circuit-breaker
+Content-Type: application/json
+
+{
+    "endpoint": "/api/stress-test",
+    "simulateFailure": true
+}
+
+###
+
+### 第2次调用
+POST {{host}}/api/circuitbreaker/circuit-breaker
+Content-Type: application/json
+
+{
+    "endpoint": "/api/stress-test",
+    "simulateFailure": true
+}
+
+###
+
+### 第3次调用
+POST {{host}}/api/circuitbreaker/circuit-breaker
+Content-Type: application/json
+
+{
+    "endpoint": "/api/stress-test",
+    "simulateFailure": true
+}
+
+###
+
+### 第4次调用
+POST {{host}}/api/circuitbreaker/circuit-breaker
+Content-Type: application/json
+
+{
+    "endpoint": "/api/stress-test",
+    "simulateFailure": true
+}
+
+###
+
+### 第5次调用
+POST {{host}}/api/circuitbreaker/circuit-breaker
+Content-Type: application/json
+
+{
+    "endpoint": "/api/stress-test",
+    "simulateFailure": true
+}
+
+###
+
+### 第6次调用
+POST {{host}}/api/circuitbreaker/circuit-breaker
+Content-Type: application/json
+
+{
+    "endpoint": "/api/stress-test",
+    "simulateFailure": true
+}
+
+###
+
+### 第7次调用 - 此时熔断器应该已打开
+POST {{host}}/api/circuitbreaker/circuit-breaker
+Content-Type: application/json
+
+{
+    "endpoint": "/api/stress-test",
+    "simulateFailure": false
+}
+
+###
+
+### 42. 检查熔断器状态（应该显示 OPEN）
+GET {{host}}/api/circuitbreaker/state/externalApi
+
+###
+
+### 43. 等待30秒后再次检查状态（应该转为 HALF_OPEN 或 CLOSED）
+GET {{host}}/api/circuitbreaker/state/externalApi
+
+###
+
+### =================
+# X-Caller 限流压力测试
+### =================
+
+### 44. 测试 mobile 客户端限流（100 请求/秒）
+# 快速连续执行以下请求
+GET {{host}}/api/circuitbreaker/rate-limit/caller-specific?operation=mobile-test-1
+X-Caller: mobile
+
+###
+
+GET {{host}}/api/circuitbreaker/rate-limit/caller-specific?operation=mobile-test-2
+X-Caller: mobile
+
+###
+
+GET {{host}}/api/circuitbreaker/rate-limit/caller-specific?operation=mobile-test-3
+X-Caller: mobile
+
+###
+
+GET {{host}}/api/circuitbreaker/rate-limit/caller-specific?operation=mobile-test-4
+X-Caller: mobile
+
+###
+
+GET {{host}}/api/circuitbreaker/rate-limit/caller-specific?operation=mobile-test-5
+X-Caller: mobile
+
+###
+
+### 45. 测试 web 客户端限流（50 请求/秒）
+GET {{host}}/api/circuitbreaker/rate-limit/caller-specific?operation=web-test
+X-Caller: web
+
+###
+
+### 46. 测试严格限流（3 请求/秒）- 应该很快触发限流
+GET {{host}}/api/circuitbreaker/rate-limit/strict?data=test1
+
+###
+
+GET {{host}}/api/circuitbreaker/rate-limit/strict?data=test2
+
+###
+
+GET {{host}}/api/circuitbreaker/rate-limit/strict?data=test3
+
+###
+
+GET {{host}}/api/circuitbreaker/rate-limit/strict?data=test4
+
+###
+
+GET {{host}}/api/circuitbreaker/rate-limit/strict?data=test5
+
+###
+
+### =================
+# 完整测试流程
+### =================
+
+### 47. 完整测试流程 - 重置并开始测试
+# 步骤1: 重置指标
+POST {{host}}/api/circuitbreaker/metrics/reset
+
+###
+
+# 步骤2: 重置熔断器
+POST {{host}}/api/circuitbreaker/reset/externalApi
+
+###
+
+# 步骤3: 检查初始状态
+GET {{host}}/api/circuitbreaker/state/all
+
+###
+
+# 步骤4: 执行正常请求
+POST {{host}}/api/circuitbreaker/circuit-breaker
+Content-Type: application/json
+
+{
+    "endpoint": "/api/normal",
+    "simulateFailure": false
+}
+
+###
+
+# 步骤5: 执行失败请求触发熔断
+POST {{host}}/api/circuitbreaker/circuit-breaker
+Content-Type: application/json
+
+{
+    "endpoint": "/api/fail",
+    "simulateFailure": true
+}
+
+###
+
+# 步骤6: 检查熔断器状态
+GET {{host}}/api/circuitbreaker/state/externalApi
+
+###
+
+# 步骤7: 查看指标
+GET {{host}}/api/circuitbreaker/metrics
+
+###
+
+# 步骤8: 测试 X-Caller 限流
+GET {{host}}/api/circuitbreaker/rate-limit/caller-specific?operation=final-test
+X-Caller: mobile
+
+###
+
+# 步骤9: 最终检查状态
+GET {{host}}/api/circuitbreaker/state/all
+
+###
+
+# 步骤10: 综合演示
+GET {{host}}/api/circuitbreaker/demo-all
+X-Caller: admin
+
+###
+
+### =================
+# Actuator 监控端点
+### =================
+
+### 48. 获取健康状态
+GET {{host}}/actuator/health
+
+###
+
+### 49. 获取熔断器信息
+GET {{host}}/actuator/circuitbreakers
+
+###
+
+### 50. 获取限流器信息
+GET {{host}}/actuator/ratelimiters
+
+###
+
+### 51. 获取舱壁信息
+GET {{host}}/actuator/bulkheads
+
+###
+
+### 52. 获取所有指标
+GET {{host}}/actuator/metrics
+
+###
+
+### 53. 获取应用信息
+GET {{host}}/actuator/info
+
+###
