@@ -1,0 +1,389 @@
+### Sentinel HTTP Client 文件
+### 用于 IntelliJ IDEA HTTP Client / Postman / Insomnia
+### 基础 URL: http://localhost:8080/api/sentinel
+
+@baseUrl = http://localhost:8080/api/sentinel
+@token = {{token}}
+
+###############################################################################
+# ============================================
+# 1. 流量控制接口 (Flow Control)
+# ============================================
+
+### 1.1 流量控制演示
+# 演示基于 QPS 的流量控制功能
+GET {{baseUrl}}/flow-control?shouldFail=false
+
+### 1.2 流量控制演示 - 模拟业务失败
+GET {{baseUrl}}/flow-control?shouldFail=true
+
+### 1.3 流量控制带排队等待
+# 演示使用 Warm Up 流控效果的流量控制
+GET {{baseUrl}}/flow-control/with-wait?shouldFail=false
+
+### 1.4 手动 Entry 流量控制
+# 演示手动使用 SphU.entry() 进行流量控制
+GET {{baseUrl}}/flow-control/manual?resourceName=manualResource&count=1
+
+### 1.5 手动 Entry - 自定义资源名
+GET {{baseUrl}}/flow-control/manual?resourceName=myCustomResource&count=5
+
+###############################################################################
+# ============================================
+# 2. 熔断降级接口 (Circuit Breaker)
+# ============================================
+
+### 2.1 熔断降级演示 - 成功场景
+# 演示熔断器的状态转换：关闭 -> 打开 -> 半开 -> 关闭
+GET {{baseUrl}}/degrade?scenario=success
+
+### 2.2 熔断降级演示 - 慢调用场景
+# 模拟慢调用（500ms响应时间）
+GET {{baseUrl}}/degrade?scenario=slow
+
+### 2.3 熔断降级演示 - 异常场景
+# 模拟抛出异常
+GET {{baseUrl}}/degrade?scenario=exception
+
+### 2.4 慢调用熔断演示
+# 演示基于慢调用比例的熔断降级
+GET {{baseUrl}}/degrade/slow-call
+
+### 2.5 异常比例熔断演示 - 不抛异常
+GET {{baseUrl}}/degrade/exception-ratio?throwException=false
+
+### 2.6 异常比例熔断演示 - 抛异常
+# 多次调用此接口可触发异常比例熔断
+GET {{baseUrl}}/degrade/exception-ratio?throwException=true
+
+###############################################################################
+# ============================================
+# 3. 热点参数限流接口 (Hotspot Parameter Flow)
+# ============================================
+
+### 3.1 热点参数限流演示
+# 演示基于参数（如 userId）的热点流控
+GET {{baseUrl}}/hotspot?userId=user123&productId=product456
+
+### 3.2 热点参数限流 - 频繁用户
+# userVIP 会被识别为频繁用户而限流
+GET {{baseUrl}}/hotspot?userId=userVIP&productId=product789
+
+### 3.3 频繁用户限流演示
+# 演示对特定用户 ID 的热点流控
+GET {{baseUrl}}/hotspot/frequent-user?userId=userVIP
+
+### 3.4 频繁用户限流 - 普通用户
+# 普通用户不会被限流
+GET {{baseUrl}}/hotspot/frequent-user?userId=normalUser
+
+###############################################################################
+# ============================================
+# 4. 系统自适应保护接口 (System Protection)
+# ============================================
+
+### 4.1 系统 CPU 保护演示
+# 演示基于系统 CPU 使用率的自适应保护
+GET {{baseUrl}}/system/cpu
+
+### 4.2 系统 RT 保护演示
+# 演示基于平均响应时间的自适应保护
+GET {{baseUrl}}/system/rt
+
+### 4.3 系统并发保护演示
+# 演示基于并发线程数的自适应保护
+GET {{baseUrl}}/system/concurrency
+
+### 4.4 系统入口 QPS 保护演示
+# 演示基于系统入口 QPS 的自适应保护
+GET {{baseUrl}}/system/qps
+
+###############################################################################
+# ============================================
+# 5. 异常追踪接口 (Exception Trace)
+# ============================================
+
+### 5.1 异常追踪演示 - 不追踪
+GET {{baseUrl}}/exception-trace?shouldTrace=false
+
+### 5.2 异常追踪演示 - 追踪异常
+# 使用 Tracer.trace() 追踪异常
+GET {{baseUrl}}/exception-trace?shouldTrace=true
+
+###############################################################################
+# ============================================
+# 6. 统计信息接口 (Statistics)
+# ============================================
+
+### 6.1 获取实时统计信息
+# 查询指定资源的实时 QPS、拒绝数、成功率等指标
+GET {{baseUrl}}/statistics?resourceName=flowControlResource
+
+### 6.2 获取降级资源统计
+GET {{baseUrl}}/statistics?resourceName=degradeResource
+
+### 6.3 获取热点参数资源统计
+GET {{baseUrl}}/statistics?resourceName=paramFlowResource
+
+### 6.4 获取所有资源的统计信息
+# 查询所有已定义资源的实时指标
+GET {{baseUrl}}/statistics/all
+
+### 6.5 获取计数器值
+# 查询指定资源的调用和失败计数
+GET {{baseUrl}}/counters?resource=flowControlResource
+
+### 6.6 重置计数器
+# 重置所有调用和失败计数器
+POST {{baseUrl}}/counters/reset
+
+###############################################################################
+# ============================================
+# 7. 规则查询接口 (Rule Query)
+# ============================================
+
+### 7.1 获取所有规则
+# 查询当前加载的所有 Sentinel 规则
+GET {{baseUrl}}/rules
+
+### 7.2 获取所有资源名称
+# 列出所有已定义的资源
+GET {{baseUrl}}/resources
+
+###############################################################################
+# ============================================
+# 8. 规则管理接口 - 流量控制 (Flow Rule Management)
+# ============================================
+
+### 8.1 添加 QPS 流控规则
+# grade: 0-线程数, 1-QPS
+POST {{baseUrl}}/rules/flow
+Content-Type: application/x-www-form-urlencoded
+
+resource=testResource&count=10&grade=1&limitApp=default
+
+### 8.2 添加线程数流控规则
+# 限制最大并发线程数为 5
+POST {{baseUrl}}/rules/flow
+Content-Type: application/x-www-form-urlencoded
+
+resource=threadTestResource&count=5&grade=0&limitApp=default
+
+### 8.3 添加严格流控规则
+# 每秒仅允许 1 次请求
+POST {{baseUrl}}/rules/flow
+Content-Type: application/x-www-form-urlencoded
+
+resource=strictResource&count=1&grade=1&limitApp=default
+
+###############################################################################
+# ============================================
+# 9. 规则管理接口 - 熔断降级 (Degrade Rule Management)
+# ============================================
+
+### 9.1 添加慢调用比例熔断规则
+# grade: 0-慢调用比例, 1-异常比例, 2-异常数
+POST {{baseUrl}}/rules/degrade
+Content-Type: application/x-www-form-urlencoded
+
+resource=slowDegradeResource&grade=0&count=0.5&timeWindow=10&minRequestAmount=5
+
+### 9.2 添加异常比例熔断规则
+# 异常比例超过 50% 时触发熔断
+POST {{baseUrl}}/rules/degrade
+Content-Type: application/x-www-form-urlencoded
+
+resource=exceptionDegradeResource&grade=1&count=0.5&timeWindow=10&minRequestAmount=5
+
+### 9.3 添加异常数熔断规则
+# 异常数超过 10 时触发熔断
+POST {{baseUrl}}/rules/degrade
+Content-Type: application/x-www-form-urlencoded
+
+resource=exceptionCountResource&grade=2&count=10&timeWindow=60&minRequestAmount=5
+
+###############################################################################
+# ============================================
+# 10. 规则管理接口 - 热点参数 (Param Flow Rule Management)
+# ============================================
+
+### 10.1 添加热点参数流控规则
+# 对 userId 参数进行热点限流，阈值 10
+POST {{baseUrl}}/rules/param-flow
+Content-Type: application/x-www-form-urlencoded
+
+resource=paramFlowResource&threshold=10&paramIdx=0&paramName=userId
+
+### 10.2 添加严格热点参数限流规则
+# 对 userId 参数进行严格限流，阈值 3
+POST {{baseUrl}}/rules/param-flow
+Content-Type: application/x-www-form-urlencoded
+
+resource=paramFlowStrictResource&threshold=3&paramIdx=0&paramName=userId
+
+###############################################################################
+# ============================================
+# 11. 规则管理接口 - 系统规则 (System Rule Management)
+# ============================================
+
+### 11.1 添加 CPU 使用率规则
+# ruleType: 0-LOAD, 1-RT, 2-THREAD, 3-QPS, 4-CPU
+# CPU 使用率超过 80% 时触发保护
+POST {{baseUrl}}/rules/system
+Content-Type: application/x-www-form-urlencoded
+
+ruleType=4&threshold=0.8
+
+### 11.2 添加平均 RT 规则
+# 平均响应时间超过 1000ms 时触发保护
+POST {{baseUrl}}/rules/system
+Content-Type: application/x-www-form-urlencoded
+
+ruleType=1&threshold=1000
+
+### 11.3 添加并发线程数规则
+# 并发线程数超过 50 时触发保护
+POST {{baseUrl}}/rules/system
+Content-Type: application/x-www-form-urlencoded
+
+ruleType=2&threshold=50
+
+### 11.4 添加入口 QPS 规则
+# 入口 QPS 超过 1000 时触发保护
+POST {{baseUrl}}/rules/system
+Content-Type: application/x-www-form-urlencoded
+
+ruleType=3&threshold=1000
+
+###############################################################################
+# ============================================
+# 12. 规则删除接口 (Rule Deletion)
+# ============================================
+
+### 12.1 删除流量控制规则
+DELETE {{baseUrl}}/rules/flow/{{resource}}
+
+### 12.2 删除流控规则示例
+DELETE {{baseUrl}}/rules/flow/testResource
+
+### 12.3 删除熔断降级规则
+DELETE {{baseUrl}}/rules/degrade/{{resource}}
+
+### 12.4 删除降级规则示例
+DELETE {{baseUrl}}/rules/degrade/slowDegradeResource
+
+### 12.5 删除热点参数流控规则
+DELETE {{baseUrl}}/rules/param-flow/{{resource}}
+
+### 12.6 删除热点参数规则示例
+DELETE {{baseUrl}}/rules/param-flow/paramFlowResource
+
+### 12.7 清除所有系统规则
+DELETE {{baseUrl}}/rules/system
+
+### 12.8 清除所有 Sentinel 规则
+DELETE {{baseUrl}}/rules/all
+
+###############################################################################
+# ============================================
+# 13. 综合演示接口 (Demo)
+# ============================================
+
+### 13.1 综合演示所有功能
+# 演示 Sentinel 的所有流量控制和熔断降级功能
+GET {{baseUrl}}/demo-all
+
+###############################################################################
+# ============================================
+# 测试场景
+# ============================================
+
+### 场景1：测试流控规则效果
+# 1. 添加流控规则（QPS=5）
+# 2. 快速发送请求触发限流
+# 3. 查看统计信息
+
+### 步骤1: 添加流控规则
+POST {{baseUrl}}/rules/flow
+Content-Type: application/x-www-form-urlencoded
+
+resource=qpsTestResource&count=5&grade=1&limitApp=default
+
+### 步骤2: 连续请求测试（会触发限流）
+GET {{baseUrl}}/flow-control?shouldFail=false
+
+### 步骤3: 查看统计信息
+GET {{baseUrl}}/statistics?resourceName=flowControlResource
+
+### 场景2：测试熔断降级效果
+# 1. 添加熔断规则
+# 2. 连续发送异常请求触发熔断
+# 3. 查看熔断状态
+
+### 步骤1: 添加异常比例熔断规则
+POST {{baseUrl}}/rules/degrade
+Content-Type: application/x-www-form-urlencoded
+
+resource=circuitTestResource&grade=1&count=0.5&timeWindow=10&minRequestAmount=3
+
+### 步骤2: 发送异常请求（多次调用触发熔断）
+GET {{baseUrl}}/degrade/exception-ratio?throwException=true
+
+### 步骤3: 发送正常请求（熔断期间会被拒绝）
+GET {{baseUrl}}/degrade/exception-ratio?throwException=false
+
+### 步骤4: 等待10秒后，熔断器进入半开状态
+GET {{baseUrl}}/degrade/exception-ratio?throwException=false
+
+### 场景3：测试热点参数限流
+# 1. 添加热点参数规则
+# 2. 使用相同用户ID快速请求
+# 3. 验证热点用户被限流
+
+### 步骤1: 添加热点参数流控规则
+POST {{baseUrl}}/rules/param-flow
+Content-Type: application/x-www-form-urlencoded
+
+resource=hotspotTestResource&threshold=5&paramIdx=0&paramName=userId
+
+### 步骤2: 使用普通用户请求（正常通过）
+GET {{baseUrl}}/hotspot?userId=normalUser&productId=product123
+
+### 步骤3: 使用热点用户请求（可能被限流）
+GET {{baseUrl}}/hotspot?userId=frequentUser&productId=product456
+
+### 场景4：完整工作流测试
+# 完整的规则管理流程演示
+
+### 1. 查看初始状态
+GET {{baseUrl}}/rules
+
+### 2. 添加流控规则
+POST {{baseUrl}}/rules/flow
+Content-Type: application/x-www-form-urlencoded
+
+resource=workflowResource&count=20&grade=1&limitApp=default
+
+### 3. 添加熔断规则
+POST {{baseUrl}}/rules/degrade
+Content-Type: application/x-www-form-urlencoded
+
+resource=workflowResource&grade=0&count=0.5&timeWindow=5&minRequestAmount=3
+
+### 4. 测试资源
+GET {{baseUrl}}/flow-control?shouldFail=false
+
+### 5. 查看统计
+GET {{baseUrl}}/statistics?resourceName=flowControlResource
+
+### 6. 查看计数器
+GET {{baseUrl}}/counters?resource=flowControlResource
+
+### 7. 删除规则
+DELETE {{baseUrl}}/rules/flow/workflowResource
+
+### 8. 重置计数器
+POST {{baseUrl}}/counters/reset
+
+### 9. 清除所有规则
+DELETE {{baseUrl}}/rules/all
