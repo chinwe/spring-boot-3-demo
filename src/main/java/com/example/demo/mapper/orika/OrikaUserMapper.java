@@ -1,6 +1,7 @@
 package com.example.demo.mapper.orika;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import com.example.demo.dto.UserDto;
 import com.example.demo.entity.User;
@@ -33,5 +34,6 @@ public interface OrikaUserMapper {
      * @param dto 源 UserDto 对象
      * @return 映射后的 User 对象
      */
+    @Mapping(target = "id", ignore = true)
     User toUser(UserDto dto);
 }

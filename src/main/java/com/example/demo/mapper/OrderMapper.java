@@ -198,6 +198,16 @@ public abstract class OrderMapper {
     /**
      * 使用上下文的映射方法
      */
+    @Mapping(target = "createdAtEpoch", ignore = true)
+    @Mapping(target = "customerName", source = "customer.fullName")
+    @Mapping(target = "customerEmail", source = "customer.email")
+    @Mapping(target = "customerAddress", source = "customer.address")
+    @Mapping(target = "orderDateStr", source = "orderDate", qualifiedByName = "formatDate")
+    @Mapping(target = "statusDisplay", source = "status", qualifiedByName = "statusToDisplay")
+    @Mapping(target = "totalAmountDisplay", source = "totalAmount", qualifiedByName = "formatOrderCurrency")
+    @Mapping(target = "mappedBy", constant = "MapStruct")
+    @Mapping(target = "remarks", source = "remarks", defaultValue = "No remarks")
+    @Mapping(target = "checksum", ignore = true)
     public abstract OrderDto toOrderDtoWithContext(Order order, @Context MappingContext context);
 
     /**

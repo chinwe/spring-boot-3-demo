@@ -25,7 +25,10 @@ public interface AddressMapper {
 
     /**
      * AddressDto -> Address
+     * 忽略 street 和 state，因为 AddressDto 中没有这些字段
      */
     @Mapping(target = "zipCode", source = "postalCode")
+    @Mapping(target = "street", ignore = true)
+    @Mapping(target = "state", ignore = true)
     Address toAddress(AddressDto dto);
 }

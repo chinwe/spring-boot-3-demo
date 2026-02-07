@@ -25,7 +25,8 @@ import com.example.demo.entity.Order;
  */
 @Mapper(
     componentModel = "spring",
-    uses = {OrikaAddressMapper.class}
+    uses = {OrikaAddressMapper.class, OrikaOrderItemMapper.class},
+    nullValueMappingStrategy = org.mapstruct.NullValueMappingStrategy.RETURN_NULL
 )
 public interface OrikaOrderMapper {
 
@@ -47,7 +48,7 @@ public interface OrikaOrderMapper {
     @Mapping(target = "customerAddress", source = "customer.address")
     @Mapping(target = "orderDateStr", source = "orderDate", qualifiedByName = "formatDate")
     @Mapping(target = "statusDisplay", source = "status", qualifiedByName = "statusToDisplay")
-    @Mapping(target = "totalAmountDisplay", source = "totalAmount", qualifiedByName = "formatCurrency")
+    @Mapping(target = "totalAmountDisplay", source = "totalAmount", qualifiedByName = "formatOrderCurrency")
     @Mapping(target = "createdAtEpoch", ignore = true)
     @Mapping(target = "mappedBy", ignore = true)
     @Mapping(target = "checksum", ignore = true)
@@ -84,11 +85,11 @@ public interface OrikaOrderMapper {
     }
 
     /**
-     * 格式化货币
+     * 格式化订单货币
      * 与 Orika CurrencyConverter 相同的逻辑
      */
-    @Named("formatCurrency")
-    default String formatCurrency(Double amount) {
+    @Named("formatOrderCurrency")
+    default String formatOrderCurrency(Double amount) {
         if (amount == null) {
             return "$0.00";
         }

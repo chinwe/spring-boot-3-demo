@@ -45,6 +45,11 @@ mvn test -Dtest=VirtualThreadControllerTest
 mvn test -Dtest=VirtualThreadIntegrationTest
 mvn test -Dtest=VirtualThreadPerformanceTest
 
+# Sentinel 模块测试
+mvn test -Dtest=SentinelServiceTest
+mvn test -Dtest=SentinelControllerTest
+mvn test -Dtest=SentinelIntegrationTest
+
 # 运行特定包下的测试
 mvn test -Dtest=com.example.demo.controller.*
 mvn test -Dtest=com.example.demo.service.jooq.*
@@ -193,6 +198,37 @@ com.example.demo.virtual/
     └── PinDetectionVo.java               # Pin 检测 VO
 ```
 
+### Sentinel 模块结构
+
+```
+com.example.demo.sentinel/
+├── configuration/                      # Sentinel 配置
+│   └── SentinelConfiguration.java      # Sentinel 配置类
+│
+├── controller/                         # Sentinel 控制器
+│   └── SentinelController.java         # Sentinel API 接口
+│
+├── service/                            # 服务层
+│   └── SentinelService.java            # Sentinel 核心服务
+│
+├── dto/                                # 数据传输对象
+│   ├── SentinelRuleDto.java            # 规则定义 DTO
+│   ├── SentinelMetricDto.java          # 指标信息 DTO
+│   ├── SentinelBlockedExceptionDto.java # 阻塞异常 DTO
+│   ├── SentinelDegradeResultDto.java   # 降级结果 DTO
+│   ├── SentinelResultDto.java          # 执行结果 DTO
+│   ├── SentinelMetricsDto.java         # 统计指标 DTO
+│   └── RuleInfoDto.java                # 规则信息 DTO
+│
+├── vo/                                 # 值对象
+│   ├── SentinelRuleVo.java             # 规则展示 VO
+│   ├── SentinelStatisticsVo.java       # 统计信息 VO
+│   └── SentinelFlowControlVo.java      # 流控结果 VO
+│
+└── exception/                          # 异常处理
+    └── SentinelExceptionHandler.java   # Sentinel 异常处理器
+```
+
 ### 核心功能模块
 
 #### 1. Spring Retry 模块
@@ -249,6 +285,23 @@ com.example.demo.virtual/
   - 虚拟线程执行器 Bean 配置
   - 需要启用预览功能：`--enable-preview`
 
+#### 6. Sentinel 模块（流量控制与熔断降级）
+- **位置**: `sentinel/` 包
+- **功能**: 展示 Alibaba Sentinel 流量控制、熔断降级、热点参数限流等功能
+- **特点**:
+  - **流量控制**: 支持 QPS 和并发线程数限流，支持 Warm Up 预热和匀速排队
+  - **熔断降级**: 支持慢调用比例、异常比例、异常数三种熔断策略
+  - **热点参数限流**: 基于参数值的精细化流控
+  - **系统自适应保护**: CPU、RT、并发、QPS 系统级别保护
+  - **规则动态管理**: 支持运行时动态添加和删除规则
+  - **实时统计**: 提供 QPS、拒绝数、成功率等实时指标
+- **配置**:
+  - 默认 QPS 阈值: 10
+  - 默认线程数阈值: 5
+  - 默认熔断时长: 10 秒
+  - 最小请求数: 5
+- **注解支持**: 使用 `@SentinelResource` 定义资源和处理方法
+
 ## 技术栈要点
 
 ### 核心依赖
@@ -265,6 +318,10 @@ com.example.demo.virtual/
 
 <!-- API 文档 -->
 <springdoc.version>2.8.0</springdoc.version>
+
+<!-- 流量控制和熔断 -->
+<resilience4j.version>2.3.0</resilience4j.version>
+<sentinel.version>1.8.8</sentinel.version>
 
 <!-- 测试框架 -->
 <junit-jupiter.version>5.11.4</junit-jupiter.version>
@@ -440,6 +497,53 @@ java -XX:StartFlightRecording=filename=recording.jfr,duration=60s -Djfr.enabled=
 | GET | `/api/virtual/performance-comparison` | 性能对比（传统线程池 vs 虚拟线程） |
 | GET | `/api/virtual/demo-all` | 综合演示所有功能 |
 
+#### Sentinel 接口 (`/api/sentinel`)
+
+**流量控制**:
+| 方法 | 路径 | 描述 |
+|------|------|------|
+| GET | `/api/sentinel/flow-control` | 流量控制演示 |
+| GET | `/api/sentinel/flow-control/with-wait` | 流量控制带排队等待 |
+| GET | `/api/sentinel/flow-control/manual` | 手动 Entry 流量控制 |
+
+**熔断降级**:
+| 方法 | 路径 | 描述 |
+|------|------|------|
+| GET | `/api/sentinel/degrade` | 熔断降级演示 |
+| GET | `/api/sentinel/degrade/slow-call` | 慢调用熔断演示 |
+| GET | `/api/sentinel/degrade/exception-ratio` | 异常比例熔断演示 |
+
+**热点参数限流**:
+| 方法 | 路径 | 描述 |
+|------|------|------|
+| GET | `/api/sentinel/hotspot` | 热点参数限流演示 |
+| GET | `/api/sentinel/hotspot/frequent-user` | 频繁用户限流演示 |
+
+**系统自适应保护**:
+| 方法 | 路径 | 描述 |
+|------|------|------|
+| GET | `/api/sentinel/system/cpu` | 系统 CPU 保护演示 |
+| GET | `/api/sentinel/system/rt` | 系统 RT 保护演示 |
+| GET | `/api/sentinel/system/concurrency` | 系统并发保护演示 |
+| GET | `/api/sentinel/system/qps` | 系统 QPS 保护演示 |
+
+**统计和管理**:
+| 方法 | 路径 | 描述 |
+|------|------|------|
+| GET | `/api/sentinel/statistics` | 获取实时统计信息 |
+| GET | `/api/sentinel/statistics/all` | 获取所有资源统计 |
+| GET | `/api/sentinel/rules` | 获取所有规则 |
+| POST | `/api/sentinel/rules/flow` | 添加流量控制规则 |
+| POST | `/api/sentinel/rules/degrade` | 添加熔断降级规则 |
+| POST | `/api/sentinel/rules/param-flow` | 添加热点参数流控规则 |
+| POST | `/api/sentinel/rules/system` | 添加系统规则 |
+| DELETE | `/api/sentinel/rules/flow/{resource}` | 删除流量控制规则 |
+| DELETE | `/api/sentinel/rules/degrade/{resource}` | 删除熔断降级规则 |
+| DELETE | `/api/sentinel/rules/param-flow/{resource}` | 删除热点参数流控规则 |
+| DELETE | `/api/sentinel/rules/system` | 清除所有系统规则 |
+| DELETE | `/api/sentinel/rules/all` | 清除所有规则 |
+| GET | `/api/sentinel/demo-all` | 综合演示所有功能 |
+
 ## 数据库设计
 
 ### JOOQ 电商表结构
@@ -579,4 +683,10 @@ src/test/java/com/example/demo/
 │       ├── ScopeValueServiceTest.java       # ScopeValue 服务测试
 │       ├── StructuredConcurrencyServiceTest.java # 结构化并发服务测试
 │       └── VirtualThreadMetricsServiceTest.java  # 虚拟线程指标服务测试
+├── sentinel/                            # Sentinel 测试
+│   ├── SentinelIntegrationTest.java     # Sentinel 集成测试
+│   ├── controller/
+│   │   └── SentinelControllerTest.java  # Sentinel 控制器测试
+│   └── service/
+│       └── SentinelServiceTest.java     # Sentinel 服务测试
 ```
