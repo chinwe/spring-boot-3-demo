@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Log4j2 配置文件
+    支持：
+    - Console Appender
+    - 日志脱敏（通过 Spring 后处理器实现）
+-->
+<Configuration status="WARN" monitorInterval="30">
+    <!-- 变量定义 -->
+    <Properties>
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n</Property>
+    </Properties>
+
+    <!-- Appender 定义 -->
+    <Appenders>
+        <!-- Console Appender -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+    </Appenders>
+
+    <!-- Logger 配置 -->
+    <Loggers>
+        <!-- Spring Framework 日志级别 -->
+        <Logger name="org.springframework" level="INFO"/>
+        <Logger name="org.springframework.web" level="INFO"/>
+        <Logger name="org.springframework.boot" level="INFO"/>
+
+        <!-- Hibernate/JOOQ 日志级别 -->
+        <Logger name="org.jooq" level="INFO"/>
+        <Logger name="org.hibernate" level="INFO"/>
+
+        <!-- Sentinel 日志级别 -->
+        <Logger name="com.alibaba.csp.sentinel" level="INFO"/>
+
+        <!-- 虚拟线程相关日志 -->
+        <Logger name="jdk.virtualThreads" level="INFO"/>
+
+        <!-- 根 Logger -->
+        <Root level="INFO">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>
