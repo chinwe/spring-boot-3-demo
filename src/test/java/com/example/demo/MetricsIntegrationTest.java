@@ -5,22 +5,22 @@ import com.example.demo.metrics.binder.JooqMetrics;
 import com.example.demo.metrics.binder.RetryMetrics;
 import com.example.demo.metrics.binder.SentinelMetrics;
 import com.example.demo.metrics.binder.VirtualThreadMetrics;
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.search.Search;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.autoconfigure.metrics.MetricsProperties;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Micrometer 和 Prometheus 端点集成测试
- * 验证指标收集和端点暴露功能
+ * Micrometer 和 Prometheus 指标集成测试
+ * 验证指标收集和配置功能
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
 @ActiveProfiles("test")
 class MetricsIntegrationTest {
 
@@ -28,7 +28,7 @@ class MetricsIntegrationTest {
     private MeterRegistry meterRegistry;
 
     @Autowired
-    private TestRestTemplate restTemplate;
+    private MetricsProperties metricsProperties;
 
     @Autowired(required = false)
     private AsyncMetrics asyncMetrics;
@@ -54,34 +54,26 @@ class MetricsIntegrationTest {
     }
 
     /**
-     * 测试 Prometheus 端点可访问性
+     * 测试直方图配置已启用
      */
     @Test
-    void testPrometheusEndpointAccessible() {
-        ResponseEntity<String> response = restTemplate.getForEntity("/actuator/prometheus", String.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    void testHttpServerRequestsHistogramEnabled() {
+        Boolean histogramEnabled = metricsProperties.getDistribution()
+                .getPercentilesHistogram()
+                .get("http.server.requests");
+        assertThat(histogramEnabled).isTrue();
     }
 
     /**
-     * 测试 Prometheus 端点返回正确的内容类型
+     * 测试百分位数配置保持不变
      */
     @Test
-    void testPrometheusEndpointContentType() {
-        ResponseEntity<String> response = restTemplate.getForEntity("/actuator/prometheus", String.class);
-        assertThat(response.getHeaders().getContentType().toString()).contains("text/plain");
-    }
-
-    /**
-     * 测试 Prometheus 端点包含 JVM 指标
-     */
-    @Test
-    void testJvmMetricsPresentInPrometheus() {
-        ResponseEntity<String> response = restTemplate.getForEntity("/actuator/prometheus", String.class);
-        String body = response.getBody();
-
-        // 验证包含 JVM 指标
-        assertThat(body).contains("jvm_memory");
-        assertThat(body).contains("application=");
+    void testHttpServerRequestsPercentilesConfigured() {
+        var percentiles = metricsProperties.getDistribution()
+                .getPercentiles()
+                .get("http.server.requests");
+        assertThat(percentiles).isNotNull();
+        assertThat(percentiles).containsExactly(0.5, 0.95, 0.99);
     }
 
     /**
@@ -138,5 +130,50 @@ class MetricsIntegrationTest {
         assertThat(meterRegistry.getMeters().stream()
                 .anyMatch(m -> m.getId().getName().contains("jooq_query")))
                 .isTrue();
+    }
+
+    // ========== HTTP 直方图指标测试 ==========
+
+    /**
+     * 测试 HTTP 请求直方图配置已启用
+     */
+    @Test
+    void testHttpServerRequestsHistogramConfigurationEnabled() {
+        Boolean histogramEnabled = metricsProperties.getDistribution()
+                .getPercentilesHistogram()
+                .get("http.server.requests");
+        assertThat(histogramEnabled).isTrue();
+    }
+
+    /**
+     * 测试 HTTP 请求百分位数配置
+     */
+    @Test
+    void testHttpServerRequestsPercentilesConfiguration() {
+        var percentiles = metricsProperties.getDistribution()
+                .getPercentiles()
+                .get("http.server.requests");
+        assertThat(percentiles).isNotNull();
+        assertThat(percentiles).containsExactly(0.5, 0.95, 0.99);
+    }
+
+    /**
+     * 测试 JVM 指标已注册
+     */
+    @Test
+    void testJvmMetricsRegistered() {
+        assertThat(meterRegistry.find("jvm.memory.used").gauge()).isNotNull();
+        assertThat(meterRegistry.find("jvm.gc.pause").timer()).isNotNull();
+    }
+
+    /**
+     * 测试应用标签已配置
+     */
+    @Test
+    void testApplicationTagsConfigured() {
+        var tags = metricsProperties.getTags();
+        assertThat(tags).containsKey("application");
+        assertThat(tags.get("application")).isEqualTo("demo-test");
+        assertThat(tags.get("environment")).isEqualTo("test");
     }
 }

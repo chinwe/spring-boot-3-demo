@@ -325,14 +325,29 @@ com.example.demo.metrics/
 - **功能**: 集成 Micrometer 收集和暴露应用指标
 - **特点**:
   - **JVM 指标**: 自动收集堆内存、GC、线程、CPU 使用率
-  - **HTTP 指标**: 记录请求计数、响应时间、状态码分布
+  - **HTTP 指标**: 记录请求计数、响应时间、状态码分布，支持直方图（Histogram）统计
   - **自定义业务指标**: 异步任务、重试操作、数据库查询、虚拟线程、Sentinel 流控
   - **Prometheus 端点**: `/actuator/prometheus` 暴露 Prometheus 格式指标
 - **配置**:
   - HTTP 请求百分位: 0.5, 0.95, 0.99
+  - HTTP 请求直方图: 已启用（`publishPercentileHistogram`）
   - SLA 阈值: 50ms, 100ms, 200ms, 500ms, 1s, 2s
   - 慢查询阈值: 1000ms
 - **Actuator 端点**: `health`, `info`, `metrics`, `prometheus`
+- **Prometheus 查询示例**:
+  ```promql
+  # 计算 95 百分位延迟
+  histogram_quantile(0.95, rate(http_server_requests_seconds_bucket[5m]))
+
+  # 计算每个 URI 的 P95 延迟
+  histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket[5m])) by (uri, le))
+
+  # 计算请求速率（按 HTTP 状态码分组）
+  sum(rate(http_server_requests_seconds_count[5m])) by (status)
+
+  # 检测慢请求比例（超过 1s）
+  rate(http_server_requests_seconds_bucket{le="1.0"}[5m]) / rate(http_server_requests_seconds_count[5m])
+  ```
 
 ## 技术栈要点
 
