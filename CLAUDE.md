@@ -50,6 +50,9 @@ mvn test -Dtest=SentinelServiceTest
 mvn test -Dtest=SentinelControllerTest
 mvn test -Dtest=SentinelIntegrationTest
 
+# Metrics 模块测试
+mvn test -Dtest=MetricsIntegrationTest
+
 # 运行特定包下的测试
 mvn test -Dtest=com.example.demo.controller.*
 mvn test -Dtest=com.example.demo.service.jooq.*
@@ -229,6 +232,21 @@ com.example.demo.sentinel/
     └── SentinelExceptionHandler.java   # Sentinel 异常处理器
 ```
 
+### Metrics 模块结构
+
+```
+com.example.demo.metrics/
+├── configuration/                      # Metrics 配置
+│   └── MetricsConfiguration.java      # Micrometer 配置类
+│
+└── binder/                             # 自定义指标绑定器
+    ├── AsyncMetrics.java               # 异步任务指标
+    ├── RetryMetrics.java               # 重试操作指标
+    ├── JooqMetrics.java                # 数据库查询指标
+    ├── VirtualThreadMetrics.java       # 虚拟线程指标
+    └── SentinelMetrics.java            # Sentinel 流量控制指标
+```
+
 ### 核心功能模块
 
 #### 1. Spring Retry 模块
@@ -301,6 +319,20 @@ com.example.demo.sentinel/
   - 默认熔断时长: 10 秒
   - 最小请求数: 5
 - **注解支持**: 使用 `@SentinelResource` 定义资源和处理方法
+
+#### 7. Metrics 模块（Micrometer + Prometheus）
+- **位置**: `metrics/` 包
+- **功能**: 集成 Micrometer 收集和暴露应用指标
+- **特点**:
+  - **JVM 指标**: 自动收集堆内存、GC、线程、CPU 使用率
+  - **HTTP 指标**: 记录请求计数、响应时间、状态码分布
+  - **自定义业务指标**: 异步任务、重试操作、数据库查询、虚拟线程、Sentinel 流控
+  - **Prometheus 端点**: `/actuator/prometheus` 暴露 Prometheus 格式指标
+- **配置**:
+  - HTTP 请求百分位: 0.5, 0.95, 0.99
+  - SLA 阈值: 50ms, 100ms, 200ms, 500ms, 1s, 2s
+  - 慢查询阈值: 1000ms
+- **Actuator 端点**: `health`, `info`, `metrics`, `prometheus`
 
 ## 技术栈要点
 
@@ -397,6 +429,17 @@ java -XX:StartFlightRecording=filename=recording.jfr,duration=60s -Djfr.enabled=
 项目集成了 SpringDoc OpenAPI (Swagger UI)：
 - **Swagger UI**: `http://localhost:8080/swagger-ui.html`
 - **OpenAPI JSON**: `http://localhost:8080/v3/api-docs`
+
+### Actuator 端点
+
+| 端点 | 描述 |
+|------|------|
+| GET `/actuator` | 列出所有可用的 Actuator 端点 |
+| GET `/actuator/health` | 健康检查端点 |
+| GET `/actuator/info` | 应用信息端点 |
+| GET `/actuator/metrics` | 列出所有可用的指标 |
+| GET `/actuator/metrics/{metric.name}` | 获取指定指标的值 |
+| GET `/actuator/prometheus` | Prometheus 格式指标端点 |
 
 ### API 接口列表
 
@@ -689,4 +732,31 @@ src/test/java/com/example/demo/
 │   │   └── SentinelControllerTest.java  # Sentinel 控制器测试
 │   └── service/
 │       └── SentinelServiceTest.java     # Sentinel 服务测试
+└── MetricsIntegrationTest.java         # Metrics 集成测试
 ```
+
+<!-- gitnexus:start -->
+# GitNexus MCP
+
+This project is indexed by GitNexus as **spring-boot-3-demo** (1766 symbols, 3973 relationships, 124 execution flows).
+
+## Always Start Here
+
+1. **Read `gitnexus://repo/{name}/context`** — codebase overview + check index freshness
+2. **Match your task to a skill below** and **read that skill file**
+3. **Follow the skill's workflow and checklist**
+
+> If step 1 warns the index is stale, run `npx gitnexus analyze` in the terminal first.
+
+## Skills
+
+| Task | Read this skill file |
+|------|---------------------|
+| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md` |
+| Blast radius / "What breaks if I change X?" | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
+| Trace bugs / "Why is X failing?" | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md` |
+| Rename / extract / split / refactor | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md` |
+| Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
+| Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
+
+<!-- gitnexus:end -->
