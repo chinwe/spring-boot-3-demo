@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "mcp__plugin_context7_context7__query-docs",
+      "Bash(mvn clean compile test-compile test:*)",
+      "Bash(cmd:*)",
+      "Bash(where:*)",
+      "Bash(where mvn:*)",
+      "Bash(mvn test:*)",
+      "Bash(java:*)",
+      "Bash(javac:*)",
+      "Bash(set:*)",
+      "Bash(%PATH%)",
+      "Bash(\"D:\\\\jdk\\\\jdk21.0.2_13\\\\bin\\\\java.exe\":*)",
+      "Bash(export JAVA_HOME:*)",
+      "Bash(export PATH=\"$JAVA_HOME/bin:$PATH\":*)",
+      "Bash(mvn clean test:*)",
+      "Bash(mvn clean compile:*)",
+      "Bash(mvn test-compile:*)",
+      "mcp__web-search-prime__webSearchPrime",
+      "mcp__plugin_claude-mem_mcp-search__search",
+      "Skill(superpowers:writing-plans)",
+      "WebSearch",
+      "Bash(dir D:workspacespring-boot-3-demotargetsurefire-reports)",
+      "mcp__ide__getDiagnostics",
+      "Bash(dir:*)",
+      "Bash(tree:*)",
+      "Bash(more:*)",
+      "Bash(git worktree:*)",
+      "Bash(git remote add:*)",
+      "Bash(mvn compiler:testCompile:*)",
+      "Bash(ls:*)",
+      "Bash(git push:*)"
+    ]
+  }
+}

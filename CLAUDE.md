@@ -775,3 +775,44 @@ This project is indexed by GitNexus as **spring-boot-3-demo** (1766 symbols, 397
 | Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
 
 <!-- gitnexus:end -->
+
+# Gstack
+
+Gstack 是一个快速的无头浏览器工具，用于 QA 测试和网站测试。
+
+## 网页浏览规则
+
+- **始终使用** `/browse` 技能进行网页浏览
+- **切勿使用** `mcp__claude-in-chrome__*` 工具
+
+## 可用技能
+
+| 技能 | 描述 |
+|------|------|
+| `/office-hours` | YC Office Hours - 创业模式问答 |
+| `/plan-ceo-review` | CEO/创始人计划审查 |
+| `/plan-eng-review` | 工程经理计划审查 |
+| `/plan-design-review` | 设计审查计划 |
+| `/design-consultation` | 设计咨询 |
+| `/review` | PR 前审查 |
+| `/ship` | 发布工作流 |
+| `/land-and-deploy` | 合并和部署工作流 |
+| `/canary` | 部署后金丝雀监控 |
+| `/benchmark` | 性能回归检测 |
+| `/browse` | 快速无头浏览器 - 用于网页浏览 |
+| `/qa` | 系统化 QA 测试并修复发现的 bug |
+| `/qa-only` | 仅报告 QA 测试 |
+| `/design-review` | 设计师视角 QA |
+| `/setup-browser-cookies` | 从真实浏览器导入 cookies |
+| `/setup-deploy` | 配置部署设置 |
+| `/retro` | 每周工程回顾 |
+| `/investigate` | 系统化调试和根因调查 |
+| `/document-release` | 发布后文档更新 |
+| `/codex` | OpenAI Codex CLI 包装器 |
+| `/cso` | 首席安全官模式 |
+| `/autoplan` | 自动审查管道 |
+| `/careful` | 破坏性命令的安全防护 |
+| `/freeze` | 限制文件编辑到特定目录 |
+| `/guard` | 完全安全模式 |
+| `/unfreeze` | 清除冻结边界 |
+| `/gstack-upgrade` | 升级 gstack 到最新版本 |
