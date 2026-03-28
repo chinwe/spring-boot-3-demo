@@ -9,6 +9,8 @@ target
 .claude/**/*.node
 .claude/**/*.exe
 .claude/**/*.dll
+.claude/skills
+.claude/commands
 .kiro
 
 # Eclipse
@@ -18,3 +20,4 @@ target
 .settings/
 nul
 .gitnexus
+_bmad/
