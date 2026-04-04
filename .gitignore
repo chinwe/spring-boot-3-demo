@@ -4,13 +4,8 @@
 target
 .idea
 .vscode
-# Claude Code - ignore node_modules but keep skill files
-.claude/**/node_modules/
-.claude/**/*.node
-.claude/**/*.exe
-.claude/**/*.dll
-.claude/skills
-.claude/commands
+# Claude Code
+.claude
 .kiro
 
 # Eclipse
