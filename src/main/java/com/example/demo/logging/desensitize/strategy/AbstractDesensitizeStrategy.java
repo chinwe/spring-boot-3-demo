@@ -3,6 +3,7 @@ package com.example.demo.logging.desensitize.strategy;
 import com.example.demo.logging.desensitize.model.DesensitizeConfig;
 import com.example.demo.logging.desensitize.model.DesensitizeRule;
 import com.example.demo.logging.desensitize.model.DesensitizeType;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,6 +15,7 @@ import java.util.regex.PatternSyntaxException;
  * 提供通用的正则匹配和脱敏处理逻辑
  * 支持正则表达式缓存以提升性能
  */
+@Slf4j
 public abstract class AbstractDesensitizeStrategy implements DesensitizeStrategy {
 
     /**
@@ -121,8 +123,7 @@ public abstract class AbstractDesensitizeStrategy implements DesensitizeStrategy
             return compilePattern(rule.getPattern()).matcher(input).find();
         } catch (IllegalArgumentException e) {
             // 正则表达式错误，记录错误并返回 false
-            System.err.println("[DESENSITIZE ERROR] Failed to compile pattern for rule " +
-                rule.getType() + ": " + e.getMessage());
+            log.error("Failed to compile pattern for rule {}: {}", rule.getType(), e.getMessage());
             return false;
         }
     }
@@ -192,8 +193,7 @@ public abstract class AbstractDesensitizeStrategy implements DesensitizeStrategy
             return doDesensitize(input, rule, compilePattern(pattern));
         } catch (IllegalArgumentException e) {
             // 正则表达式错误，记录错误并返回原始输入
-            System.err.println("[DESENSITIZE ERROR] Failed to desensitize with rule " +
-                rule.getType() + ": " + e.getMessage());
+            log.error("Failed to desensitize with rule {}: {}", rule.getType(), e.getMessage());
             return input;
         }
     }

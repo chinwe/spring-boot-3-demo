@@ -4,15 +4,13 @@ import com.example.demo.logging.desensitize.layout.DesensitizePatternLayout;
 import com.example.demo.logging.desensitize.model.DesensitizeConfig;
 import com.example.demo.logging.desensitize.model.DesensitizeType;
 import com.example.demo.logging.desensitize.strategy.DesensitizeStrategy;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.ConsoleAppender;
-import org.apache.logging.log4j.core.config.AppenderRef;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
-import org.apache.logging.log4j.core.layout.PatternLayout;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -25,18 +23,11 @@ import java.util.Map;
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class Log4j2PostProcessor {
 
     private final DesensitizeConfig desensitizeConfig;
     private final Map<DesensitizeType, DesensitizeStrategy> strategyMap;
-
-    @Autowired
-    public Log4j2PostProcessor(
-            DesensitizeConfig desensitizeConfig,
-            Map<DesensitizeType, DesensitizeStrategy> strategyMap) {
-        this.desensitizeConfig = desensitizeConfig;
-        this.strategyMap = strategyMap;
-    }
 
     /**
      * 应用启动完成后修改 Log4j2 配置

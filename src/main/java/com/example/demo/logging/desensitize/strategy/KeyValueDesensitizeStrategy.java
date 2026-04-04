@@ -5,7 +5,6 @@ import com.example.demo.logging.desensitize.model.DesensitizeType;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * 键值对脱敏策略
@@ -14,6 +13,11 @@ import java.util.Set;
  */
 @Component
 public class KeyValueDesensitizeStrategy extends AbstractDesensitizeStrategy {
+
+    /** 掩码最小长度 */
+    private static final int MIN_MASK_LENGTH = 3;
+    /** 掩码最大长度 */
+    private static final int MAX_MASK_LENGTH = 6;
 
     @Override
     public DesensitizeType getSupportedType() {
@@ -76,8 +80,6 @@ public class KeyValueDesensitizeStrategy extends AbstractDesensitizeStrategy {
      * 支持格式: key=value, key:value, key=>value, "key":"value"
      */
     private String desensitizeByKey(String input, String keyName, DesensitizeRule rule) {
-        // 构建正则表达式，支持多种分隔符和引号
-        String pattern = "(?i)(\"?" + java.util.regex.Pattern.quote(keyName) + "\"?\\s*[=:]\\s*\")?([^\"]+)(\"?)";
         var compiledPattern = compilePattern("(?i)(" + java.util.regex.Pattern.quote(keyName) + "\\s*[=:=>]\\s*)([^,}\\s\"\"]+)");
 
         var matcher = compiledPattern.matcher(input);
@@ -92,7 +94,7 @@ public class KeyValueDesensitizeStrategy extends AbstractDesensitizeStrategy {
             String prefix = matcher.group(1);
             // 根据值的长度生成掩码
             String value = matcher.group(2);
-            int maskLength = Math.max(3, Math.min(value.length(), 6));
+            int maskLength = Math.max(MIN_MASK_LENGTH, Math.min(value.length(), MAX_MASK_LENGTH));
             String mask = generateMask(maskLength, rule);
             matcher.appendReplacement(sb, prefix + mask);
         }
@@ -103,7 +105,7 @@ public class KeyValueDesensitizeStrategy extends AbstractDesensitizeStrategy {
     @Override
     protected String desensitizeMatched(String matched, DesensitizeRule rule) {
         // 对于键值对类型，根据长度生成掩码
-        int maskLength = Math.max(3, Math.min(matched.length(), 6));
+        int maskLength = Math.max(MIN_MASK_LENGTH, Math.min(matched.length(), MAX_MASK_LENGTH));
         return generateMask(maskLength, rule);
     }
 }

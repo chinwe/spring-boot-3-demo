@@ -11,8 +11,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class PhoneDesensitizeStrategy extends AbstractDesensitizeStrategy {
 
-    // 预编译手机号正则表达式
+    /** 手机号正则表达式 */
     private static final String PHONE_PATTERN = "\\b1[3-9]\\d{9}\\b";
+    /** 手机号固定长度 */
+    private static final int PHONE_LENGTH = 11;
+    /** 最大保留前缀长度 */
+    private static final int MAX_KEEP_PREFIX = 6;
+    /** 最大保留后缀长度 */
+    private static final int MAX_KEEP_SUFFIX = 4;
 
     @Override
     public DesensitizeType getSupportedType() {
@@ -42,12 +48,12 @@ public class PhoneDesensitizeStrategy extends AbstractDesensitizeStrategy {
     protected String desensitizeMatched(String phone, DesensitizeRule rule) {
         // 手机号固定11位，保留前3后4
         int length = phone.length();
-        if (length != 11) {
+        if (length != PHONE_LENGTH) {
             return phone;
         }
 
-        int keepPrefix = Math.min(rule.getKeepPrefix(), 6);
-        int keepSuffix = Math.min(rule.getKeepSuffix(), 4);
+        int keepPrefix = Math.min(rule.getKeepPrefix(), MAX_KEEP_PREFIX);
+        int keepSuffix = Math.min(rule.getKeepSuffix(), MAX_KEEP_SUFFIX);
 
         String prefix = phone.substring(0, keepPrefix);
         String suffix = phone.substring(length - keepSuffix);

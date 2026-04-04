@@ -5,7 +5,6 @@ import com.example.demo.logging.desensitize.model.DesensitizeType;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * 密码脱敏策略（基于键值对字段名）
@@ -13,6 +12,9 @@ import java.util.Set;
  */
 @Component
 public class PasswordDesensitizeStrategy extends AbstractDesensitizeStrategy {
+
+    /** 默认掩码长度 */
+    private static final int DEFAULT_MASK_LENGTH = 6;
 
     @Override
     public DesensitizeType getSupportedType() {
@@ -87,7 +89,7 @@ public class PasswordDesensitizeStrategy extends AbstractDesensitizeStrategy {
         var sb = new StringBuffer();
         while (matcher.find()) {
             String prefix = matcher.group(1);
-            String mask = generateMask(6, rule);
+            String mask = generateMask(DEFAULT_MASK_LENGTH, rule);
             matcher.appendReplacement(sb, prefix + mask);
         }
         matcher.appendTail(sb);
@@ -97,6 +99,6 @@ public class PasswordDesensitizeStrategy extends AbstractDesensitizeStrategy {
     @Override
     protected String desensitizeMatched(String matched, DesensitizeRule rule) {
         // 对于密码类型，全部替换为掩码
-        return generateMask(6, rule);
+        return generateMask(DEFAULT_MASK_LENGTH, rule);
     }
 }

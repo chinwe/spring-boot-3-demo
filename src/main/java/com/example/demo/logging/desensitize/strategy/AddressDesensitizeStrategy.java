@@ -11,8 +11,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class AddressDesensitizeStrategy extends AbstractDesensitizeStrategy {
 
-    // 预编译地址正则表达式
+    /** 地址正则表达式 */
     private static final String ADDRESS_PATTERN = "[\\u4e00-\\u9fa5]{2,}(省|市|区|县|镇|街道|路|巷|号|室)[\\u4e00-\\u9fa5]{2,}";
+    /** 地址最小脱敏长度 */
+    private static final int ADDRESS_MIN_LENGTH = 8;
 
     @Override
     public DesensitizeType getSupportedType() {
@@ -42,7 +44,7 @@ public class AddressDesensitizeStrategy extends AbstractDesensitizeStrategy {
     protected String desensitizeMatched(String address, DesensitizeRule rule) {
         // 地址保留前6个字符
         int length = address.length();
-        if (length < 8) {
+        if (length < ADDRESS_MIN_LENGTH) {
             return address;
         }
 

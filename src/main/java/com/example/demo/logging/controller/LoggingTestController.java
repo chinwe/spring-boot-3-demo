@@ -1,5 +1,7 @@
 package com.example.demo.logging.controller;
 
+import com.example.demo.logging.desensitize.model.DesensitizeConfig;
+import com.example.demo.logging.desensitize.model.DesensitizeRule;
 import com.example.demo.logging.dto.DesensitizeTestRequest;
 import com.example.demo.logging.dto.DesensitizeTestResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -7,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +23,9 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/logging/test")
 public class LoggingTestController {
+
+    @Resource
+    private DesensitizeConfig desensitizeConfig;
 
     /**
      * 测试邮箱脱敏
@@ -181,8 +187,7 @@ public class LoggingTestController {
             log.info("Performance test iteration {}: {}", i, testData);
         }
 
-        long endTime = System.nanoTime();
-        long duration = endTime - startTime;
+        long duration = System.nanoTime() - startTime;
         double avgTimeNs = (double) duration / iterations;
         double avgTimeUs = avgTimeNs / 1000;
 
@@ -197,19 +202,21 @@ public class LoggingTestController {
     }
 
     /**
-     * 获取脱敏规则状态
+     * 获取脱敏规则状态（从配置中读取实际值）
      */
     @Operation(summary = "获取脱敏规则状态", description = "获取当前脱敏规则的启用状态")
     @GetMapping("/status")
     public Map<String, Object> getStatus() {
         Map<String, Object> status = new HashMap<>();
-        status.put("emailEnabled", true);
-        status.put("phoneEnabled", true);
-        status.put("idCardEnabled", true);
-        status.put("bankCardEnabled", true);
-        status.put("passwordEnabled", true);
-        status.put("addressEnabled", true);
-        status.put("keyValueEnabled", true);
+
+        // 从实际配置中读取每条规则的启用状态
+        if (desensitizeConfig != null && desensitizeConfig.getRules() != null) {
+            for (DesensitizeRule rule : desensitizeConfig.getRules()) {
+                String key = rule.getType().name().toLowerCase() + "Enabled";
+                status.put(key, rule.isEnabled());
+            }
+        }
+
         status.put("logFramework", "Log4j2");
         status.put("configFile", "log-desensitize.yml");
         return status;

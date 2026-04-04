@@ -1,10 +1,9 @@
 package com.example.demo.logging.configuration;
 
+import com.example.demo.logging.desensitize.layout.DesensitizePatternLayout;
 import com.example.demo.logging.desensitize.model.DesensitizeConfig;
 import com.example.demo.logging.desensitize.model.DesensitizeRule;
 import com.example.demo.logging.desensitize.model.DesensitizeType;
-import com.example.demo.logging.desensitize.layout.DesensitizePatternLayout;
-import com.example.demo.logging.desensitize.model.DesensitizeConfig;
 import com.example.demo.logging.desensitize.strategy.AbstractDesensitizeStrategy;
 import com.example.demo.logging.desensitize.strategy.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -112,7 +111,7 @@ public class Log4j2Configuration {
                 return config;
             }
         } catch (Exception e) {
-            log.warn("Failed to load desensitize config: {}, using default config", e.getMessage());
+            log.warn("Failed to load desensitize config, using default config", e);
             return createDefaultConfig();
         }
     }

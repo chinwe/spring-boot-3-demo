@@ -11,8 +11,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class IdCardDesensitizeStrategy extends AbstractDesensitizeStrategy {
 
-    // 预编译身份证号正则表达式（支持15位和18位）
+    /** 身份证号正则表达式（支持15位和18位） */
     private static final String ID_CARD_PATTERN = "\\b[1-9]\\d{5}(18|19|20)\\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\\d|3[01])\\d{3}[\\dXx]\\b";
+    /** 身份证号最小长度 */
+    private static final int ID_CARD_MIN_LENGTH = 15;
+    /** 最大保留前缀长度 */
+    private static final int MAX_KEEP_PREFIX = 8;
+    /** 最大保留后缀长度 */
+    private static final int MAX_KEEP_SUFFIX = 4;
 
     @Override
     public DesensitizeType getSupportedType() {
@@ -42,12 +48,12 @@ public class IdCardDesensitizeStrategy extends AbstractDesensitizeStrategy {
     protected String desensitizeMatched(String idCard, DesensitizeRule rule) {
         // 身份证号保留前6后4
         int length = idCard.length();
-        if (length < 15) {
+        if (length < ID_CARD_MIN_LENGTH) {
             return idCard;
         }
 
-        int keepPrefix = Math.min(rule.getKeepPrefix(), 8);
-        int keepSuffix = Math.min(rule.getKeepSuffix(), 4);
+        int keepPrefix = Math.min(rule.getKeepPrefix(), MAX_KEEP_PREFIX);
+        int keepSuffix = Math.min(rule.getKeepSuffix(), MAX_KEEP_SUFFIX);
 
         String prefix = idCard.substring(0, keepPrefix);
         String suffix = idCard.substring(length - keepSuffix);
