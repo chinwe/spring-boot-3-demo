@@ -198,8 +198,7 @@
                     <executable>D:\jdk\jdk-25.0.1+8\bin\javac</executable>
                     <source>25</source>
                     <target>25</target>
-                    <compilerArgs>
-                        <arg>-Xlint:none</arg>
+                    <compilerArgs>--enable-preview
                     </compilerArgs>
                     <annotationProcessorPaths>
                         <!-- Lombok 必须在 MapStruct 之前处理 -->

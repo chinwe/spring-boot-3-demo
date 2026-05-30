@@ -816,3 +816,17 @@ Gstack 是一个快速的无头浏览器工具，用于 QA 测试和网站测试
 | `/guard` | 完全安全模式 |
 | `/unfreeze` | 清除冻结边界 |
 | `/gstack-upgrade` | 升级 gstack 到最新版本 |
+
+## Agent skills
+
+### Issue tracker
+
+Issues tracked in GitHub (repo: chinwe/spring-boot-3-demo). See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Using default Matt Pocock triage vocabulary (needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context repo. See `docs/agents/domain.md`.
