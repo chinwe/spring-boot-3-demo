@@ -82,10 +82,21 @@ public class ScopeValueService {
                         CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
                             // 注意：这里使用普通的 CompletableFuture，ScopedValue 不会自动传递
                             // 在实际应用中，应该使用 StructuredTaskScope
-                            log.info("Child task {} - USER_ID (may be null): {}", taskIndex, UserContext.USER_ID.get());
+                            String taskUserId;
+                            try {
+                                taskUserId = UserContext.USER_ID.get();
+                            } catch (Exception e) {
+                                taskUserId = null;
+                            }
+                            log.info("Child task {} - USER_ID (may be null): {}", taskIndex, taskUserId);
 
                             // 由于没有使用 StructuredTaskScope，这里可能获取不到值
-                            String userId = UserContext.USER_ID.get();
+                            String userId;
+                            try {
+                                userId = UserContext.USER_ID.get();
+                            } catch (Exception e) {
+                                userId = null;
+                            }
                             if (userId != null) {
                                 return String.format("Child task %d - UserId: %s", taskIndex, userId);
                             } else {
@@ -184,7 +195,12 @@ public class ScopeValueService {
                         // 注意：使用 CompletableFuture 不会自动传递 ScopedValue
                         // 需要使用 StructuredTaskScope
                         CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
-                            String userId = UserContext.USER_ID.get();
+                            String userId;
+                            try {
+                                userId = UserContext.USER_ID.get();
+                            } catch (Exception e) {
+                                userId = null;
+                            }
                             log.info("ScopedValue in child thread - USER_ID: {}", userId);
                             return userId != null ? userId : "null (use StructuredTaskScope for inheritance)";
                         }, Executors.newVirtualThreadPerTaskExecutor());
