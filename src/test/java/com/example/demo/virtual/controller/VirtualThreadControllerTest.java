@@ -202,4 +202,116 @@ class VirtualThreadControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.taskId").value("test-task-1"));
     }
+
+    @Test
+    void testPinTest_Synchronized() throws Exception {
+        // Given - synchronized pin 类型
+        mockMvc.perform(post("/api/virtual/pin-test")
+                        .param("pinType", "SYNCHRONIZED"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.pinType").value("SYNCHRONIZED"))
+                .andExpect(jsonPath("$.message").exists());
+
+        org.mockito.Mockito.verify(pinDetectionService).testSynchronizedPin(anyInt(), anyInt());
+    }
+
+    @Test
+    void testPinTest_Native() throws Exception {
+        // Given
+        PinDetectionReport.PinEvent event = PinDetectionReport.PinEvent.builder()
+                .pinType(PinDetectionReport.PinType.NATIVE_METHOD)
+                .description("Native method pin event")
+                .build();
+        when(pinDetectionService.testNativeCodePin()).thenReturn(event);
+
+        // When & Then
+        mockMvc.perform(post("/api/virtual/pin-test")
+                        .param("pinType", "NATIVE"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.pinType").value("NATIVE"))
+                .andExpect(jsonPath("$.event").exists());
+    }
+
+    @Test
+    void testPinTest_FileIO() throws Exception {
+        // Given
+        when(pinDetectionService.testFileIOPin()).thenReturn(java.util.List.of());
+
+        // When & Then
+        mockMvc.perform(post("/api/virtual/pin-test")
+                        .param("pinType", "FILE_IO"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.pinType").value("FILE_IO"))
+                .andExpect(jsonPath("$.events").exists());
+    }
+
+    @Test
+    void testPinTest_UnknownType() throws Exception {
+        mockMvc.perform(post("/api/virtual/pin-test")
+                        .param("pinType", "UNKNOWN"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.error").exists())
+                .andExpect(jsonPath("$.availableTypes").isArray());
+    }
+
+    @Test
+    void testStructuredConcurrency_JoinAll() throws Exception {
+        when(structuredConcurrencyService.executeBasicStructuredTasks())
+                .thenReturn(mockStructuredResult);
+
+        mockMvc.perform(post("/api/virtual/structured-concurrency")
+                        .param("strategy", "JOIN_ALL"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultId").value("structured-result-1"))
+                .andExpect(jsonPath("$.success").value(true));
+    }
+
+    @Test
+    void testStructuredConcurrency_ShutdownOnSuccess() throws Exception {
+        when(structuredConcurrencyService.executeShutdownOnSuccess())
+                .thenReturn(mockStructuredResult);
+
+        mockMvc.perform(post("/api/virtual/structured-concurrency")
+                        .param("strategy", "SHUTDOWN_ON_SUCCESS"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+    }
+
+    @Test
+    void testStructuredConcurrency_UnknownStrategy() throws Exception {
+        mockMvc.perform(post("/api/virtual/structured-concurrency")
+                        .param("strategy", "INVALID"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testDemoAll() throws Exception {
+        // Given
+        when(virtualThreadService.executeBasicTask(anyString(), anyInt()))
+                .thenReturn(mockTaskDto);
+        when(pinDetectionService.detectPinnedThreads())
+                .thenReturn(mockPinReport);
+        when(scopeValueService.demonstrateScopedValue())
+                .thenReturn("ScopedValue demo result");
+        when(structuredConcurrencyService.executeBasicStructuredTasks())
+                .thenReturn(mockStructuredResult);
+
+        PerformanceComparisonReport perfReport = PerformanceComparisonReport.builder()
+                .reportId("perf-1")
+                .testTime(LocalDateTime.now())
+                .taskCount(100)
+                .build();
+        when(virtualThreadMetricsService.comparePerformance(anyInt(), anyInt()))
+                .thenReturn(perfReport);
+
+        // When & Then
+        mockMvc.perform(get("/api/virtual/demo-all"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("All demos completed successfully"))
+                .andExpect(jsonPath("$.basicTask").exists())
+                .andExpect(jsonPath("$.pinDetection").exists())
+                .andExpect(jsonPath("$.scopedValue").exists())
+                .andExpect(jsonPath("$.structuredConcurrency").exists())
+                .andExpect(jsonPath("$.performanceComparison").exists());
+    }
 }

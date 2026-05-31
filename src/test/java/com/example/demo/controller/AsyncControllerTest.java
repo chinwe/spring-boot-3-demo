@@ -132,4 +132,32 @@ class AsyncControllerTest {
                 .andExpect(jsonPath("$[0].taskId").value("concurrent-task-1"))
                 .andExpect(jsonPath("$[1].taskId").value("concurrent-task-2"));
     }
+
+    @Test
+    void testGetAsyncMetrics() throws Exception {
+        // Given
+        java.util.Map<String, Object> metrics = java.util.Map.of(
+                "totalTasks", 10,
+                "completedTasks", 8,
+                "failedTasks", 2
+        );
+        when(asyncMetricsService.getAsyncMetrics()).thenReturn(metrics);
+
+        // When & Then
+        mockMvc.perform(get("/async/metrics"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalTasks").value(10))
+                .andExpect(jsonPath("$.completedTasks").value(8))
+                .andExpect(jsonPath("$.failedTasks").value(2));
+    }
+
+    @Test
+    void testResetMetrics() throws Exception {
+        // When & Then
+        mockMvc.perform(post("/async/metrics/reset"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Async metrics reset successfully"));
+
+        org.mockito.Mockito.verify(asyncMetricsService).resetMetrics();
+    }
 }

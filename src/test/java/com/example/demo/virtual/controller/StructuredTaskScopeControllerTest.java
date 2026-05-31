@@ -142,4 +142,14 @@ class StructuredTaskScopeControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("All demos completed successfully"));
     }
+
+    @Test
+    @DisplayName("GET /api/virtual/sts/compare — CompletableFuture vs StructuredTaskScope 对比")
+    void compare_returnsComparisonInfo() throws Exception {
+        // When & Then
+        mockMvc.perform(get("/api/virtual/sts/compare"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").exists())
+                .andExpect(jsonPath("$.timestamp").exists());
+    }
 }

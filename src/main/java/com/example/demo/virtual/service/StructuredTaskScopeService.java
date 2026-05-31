@@ -44,16 +44,22 @@ public class StructuredTaskScopeService {
 
         log.info("Starting ShutdownOnFailure aggregation for order: {}, user: {}", orderId, userId);
 
-        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+        try (var scope = StructuredTaskScope.open()) {
 
             // 三个并行子任务
             StructuredTaskScope.Subtask<UserInfo> userTask = scope.fork(() -> fetchUserInfo(userId));
             StructuredTaskScope.Subtask<OrderItemsInfo> orderTask = scope.fork(() -> fetchOrderItems(orderId));
             StructuredTaskScope.Subtask<PaymentInfo> paymentTask = scope.fork(() -> fetchPaymentStatus(orderId));
 
-            // 等待所有任务完成或任一失败
+            // 等待所有任务完成
             scope.join();
-            scope.throwIfFailed(e -> new RuntimeException("Subtask failed", e));
+
+            // 检查子任务状态，任一失败则抛出异常
+            if (userTask.state() == StructuredTaskScope.Subtask.State.FAILED
+                    || orderTask.state() == StructuredTaskScope.Subtask.State.FAILED
+                    || paymentTask.state() == StructuredTaskScope.Subtask.State.FAILED) {
+                throw new RuntimeException("Subtask failed");
+            }
 
             // 全部成功，收集结果
             UserInfo userInfo = userTask.get();
@@ -109,24 +115,31 @@ public class StructuredTaskScopeService {
 
         log.info("Starting ShutdownOnSuccess race for order: {}", orderId);
 
-        try (var scope = new StructuredTaskScope.ShutdownOnSuccess<PaymentInfo>()) {
+        try (var scope = StructuredTaskScope.open()) {
 
             // 三个模拟支付网关，不同延迟
-            scope.fork(() -> queryPaymentGateway(orderId, "FastGateway", 50, false));
-            scope.fork(() -> queryPaymentGateway(orderId, "MediumGateway", 150, false));
-            scope.fork(() -> queryPaymentGateway(orderId, "SlowGateway", 500, false));
+            StructuredTaskScope.Subtask<PaymentInfo> fast = scope.fork(() -> queryPaymentGateway(orderId, "FastGateway", 50, false));
+            StructuredTaskScope.Subtask<PaymentInfo> medium = scope.fork(() -> queryPaymentGateway(orderId, "MediumGateway", 150, false));
+            StructuredTaskScope.Subtask<PaymentInfo> slow = scope.fork(() -> queryPaymentGateway(orderId, "SlowGateway", 500, false));
 
-            // 等待第一个成功
+            // 等待所有完成（取最快的成功结果）
             scope.join();
 
-            PaymentInfo winner = scope.result();
+            // 获取第一个成功的结果
+            PaymentInfo winner = null;
+            for (var task : List.of(fast, medium, slow)) {
+                if (task.state() == StructuredTaskScope.Subtask.State.SUCCESS) {
+                    winner = task.get();
+                    break;
+                }
+            }
 
             long totalDuration = System.currentTimeMillis() - startTime;
             log.info("Race completed in {} ms, winner: {}", totalDuration,
                     winner != null ? winner.getGatewayName() : "none");
 
             List<PaymentRaceResult.GatewayResult> gatewayResults = buildGatewayResults(
-                    scope, List.of("FastGateway", "MediumGateway", "SlowGateway"), totalDuration);
+                    List.of("FastGateway", "MediumGateway", "SlowGateway"), totalDuration);
 
             return PaymentRaceResult.builder()
                     .resultId(resultId)
@@ -160,7 +173,7 @@ public class StructuredTaskScopeService {
 
         log.info("Starting degraded aggregation for order: {}, user: {}", orderId, userId);
 
-        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+        try (var scope = StructuredTaskScope.open()) {
 
             // 核心子任务
             StructuredTaskScope.Subtask<UserInfo> userTask = scope.fork(() -> fetchUserInfo(userId));
@@ -174,7 +187,7 @@ public class StructuredTaskScopeService {
             // 检查核心任务是否失败
             if (userTask.state() == StructuredTaskScope.Subtask.State.FAILED
                     || orderTask.state() == StructuredTaskScope.Subtask.State.FAILED) {
-                scope.throwIfFailed(e -> new RuntimeException("Critical subtask failed", e));
+                throw new RuntimeException("Critical subtask failed");
             }
 
             UserInfo userInfo = userTask.get();
@@ -377,7 +390,6 @@ public class StructuredTaskScopeService {
      * 构建网关结果列表
      */
     private List<PaymentRaceResult.GatewayResult> buildGatewayResults(
-            StructuredTaskScope.ShutdownOnSuccess<PaymentInfo> scope,
             List<String> gatewayNames, long totalDuration) {
         return gatewayNames.stream()
                 .map(name -> PaymentRaceResult.GatewayResult.builder()

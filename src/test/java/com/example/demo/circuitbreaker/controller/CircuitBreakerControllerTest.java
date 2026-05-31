@@ -180,7 +180,75 @@ class CircuitBreakerControllerTest {
                 .andExpect(jsonPath("$.resiliencePattern").value("TIMEOUT"));
     }
 
+    // ==================== 组合容错模式测试 ====================
+
+    @Test
+    void testCallWithAllResiliencePatterns_Success() throws Exception {
+        // Given
+        ExternalApiRequestDto request = ExternalApiRequestDto.builder()
+                .endpoint("/api/test")
+                .simulateFailure(false)
+                .build();
+
+        CircuitBreakerResultDto result = CircuitBreakerResultDto.builder()
+                .success(true)
+                .message("All patterns success")
+                .resiliencePattern("ALL")
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        when(circuitBreakerService.callApiWithAllResiliencePatterns(any()))
+                .thenReturn(result);
+
+        // When & Then
+        mockMvc.perform(post("/api/circuitbreaker/all-resilience")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.resiliencePattern").value("ALL"));
+    }
+
+    @Test
+    void testCallWithAllResiliencePatterns_Failure() throws Exception {
+        // Given
+        ExternalApiRequestDto request = ExternalApiRequestDto.builder()
+                .endpoint("/api/test")
+                .simulateFailure(true)
+                .build();
+
+        CircuitBreakerResultDto result = CircuitBreakerResultDto.builder()
+                .success(false)
+                .message("All patterns failed")
+                .resiliencePattern("ALL")
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        when(circuitBreakerService.callApiWithAllResiliencePatterns(any()))
+                .thenReturn(result);
+
+        // When & Then
+        mockMvc.perform(post("/api/circuitbreaker/all-resilience")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isServiceUnavailable());
+    }
+
     // ==================== X-Caller 限流测试 ====================
+
+    @Test
+    void testBasicRateLimit() throws Exception {
+        // Given
+        when(callerRateLimiterService.basicRateLimitedCall(anyString()))
+                .thenReturn("Basic rate limit result");
+
+        // When & Then
+        mockMvc.perform(get("/api/circuitbreaker/rate-limit/basic")
+                        .param("data", "test-data"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Basic rate limit result"));
+    }
 
     @Test
     void testCallerSpecificRateLimit() throws Exception {
@@ -222,6 +290,34 @@ class CircuitBreakerControllerTest {
                         .param("operation", "process"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.resiliencePattern").value("PARAM_RATE_LIMITER"));
+    }
+
+    @Test
+    void testStrictRateLimit() throws Exception {
+        // Given
+        when(callerRateLimiterService.strictRateLimitedCall(anyString()))
+                .thenReturn("Strict rate limit result");
+
+        // When & Then
+        mockMvc.perform(get("/api/circuitbreaker/rate-limit/strict")
+                        .param("data", "test-data"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Strict rate limit result"));
+    }
+
+    @Test
+    void testRelaxedRateLimit() throws Exception {
+        // Given
+        when(callerRateLimiterService.relaxedRateLimitedCall(anyString()))
+                .thenReturn("Relaxed rate limit result");
+
+        // When & Then
+        mockMvc.perform(get("/api/circuitbreaker/rate-limit/relaxed")
+                        .param("data", "test-data"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Relaxed rate limit result"));
     }
 
     // ==================== 状态查询测试 ====================
