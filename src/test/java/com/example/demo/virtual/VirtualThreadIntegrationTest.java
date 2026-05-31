@@ -126,17 +126,17 @@ class VirtualThreadIntegrationTest {
     void testControllerIntegration() {
         // 测试基础任务接口
         var basicTaskResponse = virtualThreadController.executeBasicTask("ControllerTestTask", 100);
-        assertEquals(200, basicTaskResponse.getStatusCodeValue());
+        assertEquals(200, basicTaskResponse.getStatusCode().value());
         assertNotNull(basicTaskResponse.getBody());
 
         // 测试 Pin 检测接口
         var pinDetectionResponse = virtualThreadController.detectPinnedThreads();
-        assertEquals(200, pinDetectionResponse.getStatusCodeValue());
+        assertEquals(200, pinDetectionResponse.getStatusCode().value());
         assertNotNull(pinDetectionResponse.getBody());
 
         // 测试 ScopedValue 接口
         var scopedValueResponse = virtualThreadController.demonstrateScopedValue();
-        assertEquals(200, scopedValueResponse.getStatusCodeValue());
+        assertEquals(200, scopedValueResponse.getStatusCode().value());
         assertNotNull(scopedValueResponse.getBody());
     }
 

@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring Boot 3.5.9 → 4.0.6 升级变更报告</title>
+    <style>
+        :root {
+            --primary: #6DB33F;
+            --primary-dark: #5a9a35;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text: #333333;
+            --text-muted: #6c757d;
+            --border: #dee2e6;
+            --code-bg: #f1f3f5;
+            --added-bg: #d4edda;
+            --added-text: #155724;
+            --removed-bg: #f8d7da;
+            --removed-text: #721c24;
+            --info-bg: #d1ecf1;
+            --info-text: #0c5460;
+            --tag-new: #17a2b8;
+            --tag-rename: #ffc107;
+            --tag-remove: #dc3545;
+            --tag-version: #6f42c1;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #343a40 0%, #212529 100%);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header .subtitle {
+            font-size: 1.1rem;
+            color: #adb5bd;
+            margin-bottom: 1rem;
+        }
+
+        .header .version-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--primary);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .header .arrow {
+            font-size: 1.3rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border-left: 4px solid var(--primary);
+        }
+
+        .summary-card .number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .summary-card .label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        .section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: var(--primary);
+            color: white;
+            padding: 1rem 1.5rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-header .icon {
+            font-size: 1.3rem;
+        }
+
+        .section-body {
+            padding: 1.5rem;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 0.15rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tag-new { background: #e7f5ff; color: var(--tag-new); }
+        .tag-rename { background: #fff9db; color: #b37900; }
+        .tag-remove { background: #ffe3e3; color: var(--tag-remove); }
+        .tag-version { background: #f0e6ff; color: var(--tag-version); }
+        .tag-move { background: #e3fafc; color: #0c8599; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.92rem;
+        }
+
+        th {
+            background: var(--code-bg);
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid var(--border);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background: #f8f9fa; }
+
+        code {
+            background: var(--code-bg);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #d63384;
+            word-break: break-all;
+        }
+
+        pre {
+            background: #2d2d2d;
+            color: #ccc;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            margin: 0.75rem 0;
+        }
+
+        pre .added { color: #a6e3a1; background: rgba(166,227,161,0.15); }
+        pre .removed { color: #f38ba8; background: rgba(243,139,168,0.15); }
+        pre .comment { color: #6c7086; }
+
+        .diff-block {
+            margin: 1rem 0;
+        }
+
+        .diff-file {
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .change-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .change-list li {
+            padding: 0.75rem 1rem;
+            border-left: 3px solid var(--primary);
+            margin-bottom: 0.5rem;
+            background: #f8fdf4;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .change-list li .title {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .change-list li .detail {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        .file-tree {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background: var(--code-bg);
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        .file-item .file-icon { color: var(--primary); }
+        .file-item.test { border-left: 3px solid var(--tag-new); }
+
+        .note-box {
+            background: var(--info-bg);
+            color: var(--info-text);
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .note-box strong { display: block; margin-bottom: 0.25rem; }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.6rem; }
+            .container { padding: 1rem 0.75rem; }
+            .section-body { padding: 1rem; }
+            th, td { padding: 0.5rem 0.75rem; }
+            .file-tree { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>🍃 Spring Boot 升级变更报告</h1>
+    <div class="subtitle">spring-boot-3-demo 项目迁移记录</div>
+    <div class="version-badge">
+        <span>3.5.9</span>
+        <span class="arrow">→</span>
+        <span>4.0.6</span>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- 概览统计 -->
+    <div class="summary-grid">
+        <div class="summary-card">
+            <div class="number">19</div>
+            <div class="label">变更文件数</div>
+        </div>
+        <div class="summary-card">
+            <div class="number">1</div>
+            <div class="label">主代码文件</div>
+        </div>
+        <div class="summary-card">
+            <div class="number">17</div>
+            <div class="label">测试代码文件</div>
+        </div>
+        <div class="summary-card">
+            <div class="number">477</div>
+            <div class="label">测试全部通过 ✅</div>
+        </div>
+    </div>
+
+    <!-- 一、pom.xml 依赖变更 -->
+    <div class="section">
+        <div class="section-header">
+            <span class="icon">📦</span> 一、pom.xml 依赖变更
+        </div>
+        <div class="section-body">
+            <table>
+                <thead>
+                    <tr>
+                        <th>变更类型</th>
+                        <th>项目</th>
+                        <th>旧值 (3.5.9)</th>
+                        <th>新值 (4.0.6)</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="tag tag-version">版本</span></td>
+                        <td>spring-boot-starter-parent</td>
+                        <td><code>3.5.9</code></td>
+                        <td><code>4.0.6</code></td>
+                        <td>Spring Boot 主版本升级</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-rename">重命名</span></td>
+                        <td>spring-boot-starter-web</td>
+                        <td><code>spring-boot-starter-web</code></td>
+                        <td><code>spring-boot-starter-webmvc</code></td>
+                        <td>Boot 4 统一 starter 命名规范</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-rename">重命名</span></td>
+                        <td>spring-boot-starter-aop</td>
+                        <td><code>spring-boot-starter-aop</code></td>
+                        <td><code>spring-boot-starter-aspectj</code></td>
+                        <td>明确标识为 AspectJ</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-version">版本</span></td>
+                        <td>springdoc-openapi</td>
+                        <td><code>2.8.0</code></td>
+                        <td><code>3.0.3</code></td>
+                        <td>3.x 兼容 Spring Boot 4</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-new">新增</span></td>
+                        <td>spring-retry 版本</td>
+                        <td>— (BOM 管理)</td>
+                        <td><code>2.0.12</code></td>
+                        <td>Boot 4 移除了 spring-retry 的 BOM 管理</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-rename">重命名</span></td>
+                        <td>testcontainers artifact</td>
+                        <td><code>junit-jupiter</code></td>
+                        <td><code>testcontainers-junit-jupiter</code></td>
+                        <td>Testcontainers 2.x artifact 重命名</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-new">新增</span></td>
+                        <td>spring-boot-webmvc-test</td>
+                        <td>—</td>
+                        <td><code>test</code> scope</td>
+                        <td>包含 @WebMvcTest、@AutoConfigureMockMvc</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-new">新增</span></td>
+                        <td>spring-boot-resttestclient</td>
+                        <td>—</td>
+                        <td><code>test</code> scope</td>
+                        <td>包含 TestRestTemplate</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-new">新增</span></td>
+                        <td>spring-boot-restclient</td>
+                        <td>—</td>
+                        <td><code>test</code> scope</td>
+                        <td>TestRestTemplate 自动配置所需</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="diff-block">
+                <div class="diff-file">📄 pom.xml 核心变更 diff</div>
+                <pre><span class="removed">-        &lt;version&gt;3.5.9&lt;/version&gt;</span>
+<span class="added">+        &lt;version&gt;4.0.6&lt;/version&gt;</span>
+
+<span class="removed">-        &lt;springdoc.version&gt;2.8.0&lt;/springdoc.version&gt;</span>
+<span class="added">+        &lt;springdoc.version&gt;3.0.3&lt;/springdoc.version&gt;</span>
+<span class="added">+        &lt;spring-retry.version&gt;2.0.12&lt;/spring-retry.version&gt;</span>
+
+<span class="removed">-            &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;</span>
+<span class="added">+            &lt;artifactId&gt;spring-boot-starter-webmvc&lt;/artifactId&gt;</span>
+
+<span class="removed">-            &lt;artifactId&gt;spring-boot-starter-aop&lt;/artifactId&gt;</span>
+<span class="added">+            &lt;artifactId&gt;spring-boot-starter-aspectj&lt;/artifactId&gt;</span>
+
+<span class="comment">&lt;!-- spring-retry: Boot 4 不再管理版本，需显式指定 --&gt;</span>
+<span class="added">+            &lt;version&gt;${spring-retry.version}&lt;/version&gt;</span>
+
+<span class="comment">&lt;!-- 新增 Boot 4 测试依赖 --&gt;</span>
+<span class="added">+        &lt;dependency&gt;
++            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
++            &lt;artifactId&gt;spring-boot-webmvc-test&lt;/artifactId&gt;
++            &lt;scope&gt;test&lt;/scope&gt;
++        &lt;/dependency&gt;
++        &lt;dependency&gt;
++            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
++            &lt;artifactId&gt;spring-boot-resttestclient&lt;/artifactId&gt;
++            &lt;scope&gt;test&lt;/scope&gt;
++        &lt;/dependency&gt;
++        &lt;dependency&gt;
++            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
++            &lt;artifactId&gt;spring-boot-restclient&lt;/artifactId&gt;
++            &lt;scope&gt;test&lt;/scope&gt;
++        &lt;/dependency&gt;</span>
+
+<span class="removed">-            &lt;artifactId&gt;junit-jupiter&lt;/artifactId&gt;</span>
+<span class="added">+            &lt;artifactId&gt;testcontainers-junit-jupiter&lt;/artifactId&gt;</span></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 二、注解迁移 -->
+    <div class="section">
+        <div class="section-header">
+            <span class="icon">🏷️</span> 二、注解迁移（@MockBean → @MockitoBean）
+        </div>
+        <div class="section-body">
+            <p style="margin-bottom: 1rem;">Spring Boot 4.0 移除了 <code>@MockBean</code> 和 <code>@SpyBean</code>，替换为 Spring Framework 7 原生的 <code>@MockitoBean</code> 和 <code>@MockitoSpyBean</code>。</p>
+
+            <div class="diff-block">
+                <div class="diff-file">📝 注解替换规则</div>
+                <pre><span class="comment">// 注解替换</span>
+<span class="removed">- @MockBean</span>          →  <span class="added">+ @MockitoBean</span>
+<span class="removed">- @SpyBean</span>           →  <span class="added">+ @MockitoSpyBean</span>
+
+<span class="comment">// 导入包替换</span>
+<span class="removed">- import org.springframework.boot.test.mock.mockito.MockBean;</span>
+<span class="added">+ import org.springframework.test.context.bean.override.mockito.MockitoBean;</span></pre>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>文件</th>
+                        <th>替换数量</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>CircuitBreakerControllerTest.java</code></td>
+                        <td>3 处</td>
+                        <td>CircuitBreakerService、CallerRateLimiterService、CircuitBreakerMetricsService</td>
+                    </tr>
+                    <tr>
+                        <td><code>VirtualThreadControllerTest.java</code></td>
+                        <td>5 处</td>
+                        <td>VirtualThreadService、PinDetectionService、ScopeValueService、StructuredConcurrencyService、VirtualThreadMetricsService</td>
+                    </tr>
+                    <tr>
+                        <td><code>AsyncControllerTest.java</code></td>
+                        <td>2 处</td>
+                        <td>AsyncService、AsyncMetricsService</td>
+                    </tr>
+                    <tr>
+                        <td><code>SentinelControllerTest.java</code></td>
+                        <td>1 处</td>
+                        <td>SentinelService</td>
+                    </tr>
+                    <tr>
+                        <td><code>CircuitBreakerServiceTest.java</code></td>
+                        <td>1 处</td>
+                        <td>ExternalApiService</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="note-box">
+                <strong>💡 注意</strong>
+                本项目共 12 处 <code>@MockBean</code> 全部替换为 <code>@MockitoBean</code>，无 <code>@SpyBean</code> 使用。
+            </div>
+        </div>
+    </div>
+
+    <!-- 三、导入包路径变更 -->
+    <div class="section">
+        <div class="section-header">
+            <span class="icon">📂</span> 三、导入包路径变更
+        </div>
+        <div class="section-body">
+            <p style="margin-bottom: 1rem;">Spring Boot 4.0 进行了全面的模块化重构，每个模块拥有独立的包命名空间 <code>org.springframework.boot.&lt;module&gt;</code>。</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>类型</th>
+                        <th>旧包路径 (3.5.9)</th>
+                        <th>新包路径 (4.0.6)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="tag tag-move">迁移</span></td>
+                        <td><code>org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc</code></td>
+                        <td><code>org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc</code></td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-move">迁移</span></td>
+                        <td><code>org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest</code></td>
+                        <td><code>org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest</code></td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-move">迁移</span></td>
+                        <td><code>org.springframework.boot.test.web.client.TestRestTemplate</code></td>
+                        <td><code>org.springframework.boot.resttestclient.TestRestTemplate</code></td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-new">新增</span></td>
+                        <td>—</td>
+                        <td><code>org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate</code></td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-move">迁移</span></td>
+                        <td><code>org.springframework.boot.actuate.autoconfigure.metrics.MetricsProperties</code></td>
+                        <td><code>org.springframework.boot.micrometer.metrics.autoconfigure.MetricsProperties</code></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p style="margin-top: 1rem; font-weight: 600;">受影响的文件（共 15 个）：</p>
+            <div class="file-tree">
+                <div class="file-item test">🧪 AsyncIntegrationTest.java</div>
+                <div class="file-item test">🧪 AsyncPerformanceTest.java</div>
+                <div class="file-item test">🧪 MetricsIntegrationTest.java</div>
+                <div class="file-item test">🧪 TestControllerMockitoTest.java</div>
+                <div class="file-item test">🧪 TestControllerTest.java</div>
+                <div class="file-item test">🧪 CircuitBreakerControllerTest.java</div>
+                <div class="file-item test">🧪 CircuitBreakerServiceTest.java</div>
+                <div class="file-item test">🧪 AsyncControllerTest.java</div>
+                <div class="file-item test">🧪 RetryControllerTest.java</div>
+                <div class="file-item test">🧪 JooqControllerTest.java</div>
+                <div class="file-item test">🧪 OrikaControllerTest.java</div>
+                <div class="file-item test">🧪 LoggingTestControllerTest.java</div>
+                <div class="file-item test">🧪 SentinelIntegrationTest.java</div>
+                <div class="file-item test">🧪 SentinelControllerTest.java</div>
+                <div class="file-item test">🧪 VirtualThreadControllerTest.java</div>
+                <div class="file-item test">🧪 StructuredTaskScopeControllerTest.java</div>
+                <div class="file-item test">🧪 VirtualThreadIntegrationTest.java</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 四、API 变更 -->
+    <div class="section">
+        <div class="section-header">
+            <span class="icon">🔧</span> 四、API 行为变更
+        </div>
+        <div class="section-body">
+            <ul class="change-list">
+                <li>
+                    <div class="title">ObjectMapper 不再自动注入 Jackson 2 实例</div>
+                    <div class="detail">
+                        Spring Boot 4.0 默认使用 Jackson 3（包名 <code>tools.jackson</code>），不再自动配置 Jackson 2 的 <code>com.fasterxml.jackson.databind.ObjectMapper</code>。
+                    </div>
+                    <div class="diff-block" style="margin-top: 0.5rem;">
+                        <pre><span class="removed">- @Autowired</span>
+<span class="removed">- private ObjectMapper objectMapper;</span>
+<span class="added">+ private final ObjectMapper objectMapper = new ObjectMapper();</span>  <span class="comment">// 手动创建 Jackson 2 实例</span>
+<span class="comment">// 或</span>
+<span class="added">+ private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();</span>  <span class="comment">// 含 LocalDateTime 支持</span></pre>
+                    </div>
+                    <div class="detail">受影响文件：AsyncIntegrationTest、TestControllerMockitoTest、JooqControllerTest、OrikaControllerTest、LoggingTestControllerTest、SentinelIntegrationTest、CircuitBreakerControllerTest（共 7 个）</div>
+                </li>
+                <li>
+                    <div class="title">ResponseEntity.getStatusCodeValue() 已移除</div>
+                    <div class="detail">Spring Framework 7 移除了 <code>getStatusCodeValue()</code>，需改用 <code>getStatusCode().value()</code></div>
+                    <div class="diff-block" style="margin-top: 0.5rem;">
+                        <pre><span class="removed">- assertEquals(200, response.getStatusCodeValue());</span>
+<span class="added">+ assertEquals(200, response.getStatusCode().value());</span></pre>
+                    </div>
+                    <div class="detail">受影响文件：VirtualThreadIntegrationTest.java（3 处）</div>
+                </li>
+                <li>
+                    <div class="title">TestRestTemplate 需显式启用自动配置</div>
+                    <div class="detail">Boot 4 中 <code>@SpringBootTest</code> 不再自动提供 <code>TestRestTemplate</code>，需添加 <code>@AutoConfigureTestRestTemplate</code></div>
+                    <div class="diff-block" style="margin-top: 0.5rem;">
+                        <pre>@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+<span class="added">+ @AutoConfigureTestRestTemplate</span>
+public class TestControllerTest { ... }</pre>
+                    </div>
+                    <div class="detail">受影响文件：TestControllerTest.java</div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 五、主代码变更 -->
+    <div class="section">
+        <div class="section-header">
+            <span class="icon">📝</span> 五、主代码（src/main）变更
+        </div>
+        <div class="section-body">
+            <p style="margin-bottom: 1rem;">主代码仅 <strong>1 个文件</strong> 需要修改，变更量极小：</p>
+
+            <div class="diff-block">
+                <div class="diff-file">📄 DesensitizeTestRequest.java</div>
+                <pre><span class="comment">// Jackson 3.x 要求反序列化时有无参构造器，@Builder 会抑制默认构造器</span>
+@Data
+@Builder
+<span class="added">+ @NoArgsConstructor</span>
+<span class="added">+ @AllArgsConstructor</span>
+public class DesensitizeTestRequest {
+    private String email;
+    private String phone;
+}</pre>
+            </div>
+
+            <div class="note-box">
+                <strong>💡 说明</strong>
+                Spring Boot 4.0 默认使用 Jackson 3，Jackson 3 要求 POJO 有无参构造器才能反序列化。
+                由于 <code>@Builder</code> 会生成全参构造器并抑制默认构造器，因此需要补上 <code>@NoArgsConstructor</code>。
+            </div>
+        </div>
+    </div>
+
+    <!-- 六、未变更项 -->
+    <div class="section">
+        <div class="section-header">
+            <span class="icon">✅</span> 六、无需变更的模块
+        </div>
+        <div class="section-body">
+            <table>
+                <thead>
+                    <tr>
+                        <th>模块</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Resilience4j</strong> (2.3.0)</td>
+                        <td><code>resilience4j-spring-boot3</code> 仍可正常使用，无需更改版本或 artifact</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Sentinel</strong> (1.8.8)</td>
+                        <td><code>sentinel-core</code> 与 Spring Boot 4 / Spring Framework 7 兼容</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Orika</strong> (1.5.4)</td>
+                        <td>Orika 是纯运行时映射库，不依赖 Spring API，仍可正常使用</td>
+                    </tr>
+                    <tr>
+                        <td><strong>MapStruct</strong> (1.6.3)</td>
+                        <td>编译时代码生成，与运行时框架无关</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Lombok</strong> (1.18.42)</td>
+                        <td>与 Spring Boot 4 兼容</td>
+                    </tr>
+                    <tr>
+                        <td><strong>H2 数据库</strong></td>
+                        <td>版本由 Boot BOM 管理，无需手动调整</td>
+                    </tr>
+                    <tr>
+                        <td><strong>JOOQ</strong></td>
+                        <td><code>spring-boot-starter-jooq</code> 命名未变，版本由 BOM 管理</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Log4j2</strong></td>
+                        <td><code>spring-boot-starter-log4j2</code> 命名未变，配置文件无需修改</td>
+                    </tr>
+                    <tr>
+                        <td><strong>虚拟线程 / StructuredTaskScope</strong></td>
+                        <td>Java 25 API 不受 Boot 版本影响</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 七、迁移参考 -->
+    <div class="section">
+        <div class="section-header">
+            <span class="icon">🔗</span> 七、迁移参考
+        </div>
+        <div class="section-body">
+            <ul class="change-list">
+                <li>
+                    <div class="title"><a href="https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-4.0-Migration-Guide" target="_blank">Spring Boot 4.0 Migration Guide（官方）</a></div>
+                    <div class="detail">GitHub Wiki 上的完整迁移指南，涵盖所有破坏性变更</div>
+                </li>
+                <li>
+                    <div class="title"><a href="https://spring.io/blog/2025/11/20/spring-boot-4-0-0-available-now" target="_blank">Spring Boot 4.0.0 Release Announcement</a></div>
+                    <div class="detail">官方发布公告，包含模块化、Jakarta EE 11、JSpecify 等核心变更概述</div>
+                </li>
+                <li>
+                    <div class="title"><a href="https://docs.spring.io/spring-boot/appendix/dependency-versions/index.html" target="_blank">Managed Dependency Versions</a></div>
+                    <div class="detail">Spring Boot 4.0.x 管理的所有依赖版本列表</div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+
+<div class="footer">
+    <p>生成时间：2026-05-31 | 项目：spring-boot-3-demo | Spring Boot 3.5.9 → 4.0.6</p>
+    <p>Tests run: 477, Failures: 0, Errors: 0, Skipped: 1 ✅ BUILD SUCCESS</p>
+</div>
+
+</body>
+</html>
